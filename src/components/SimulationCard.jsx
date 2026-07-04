@@ -1,9 +1,14 @@
-export default function SimulationCard(props) {
+export default function SimulationCard({
+  simulationResult,
+  futureAssetManwon,
+  neededRetirementAsset,
+  retirementProgress,
+}) {
   return (
-    <div className="card">
-      <h2>🎯 목표 달성 시뮬레이션</h2>
+    <div style={{ marginTop: "20px" }}>
+      <b>🎯 목표 달성 시뮬레이션</b>
 
-      {props.simulationResult.map((item) => (
+      {simulationResult.map((item) => (
         <div className="row" key={item.invest}>
           <span>월 {item.invest}만원 투자</span>
           <b>{item.year}년</b>
@@ -13,9 +18,7 @@ export default function SimulationCard(props) {
       <div className="row">
         <span>목표 달성</span>
         <b>
-          {props.futureAssetManwon >= props.neededRetirementAsset
-            ? "✅ 가능"
-            : "❌ 부족"}
+          {futureAssetManwon >= neededRetirementAsset ? "✅ 가능" : "❌ 부족"}
         </b>
       </div>
 
@@ -25,12 +28,11 @@ export default function SimulationCard(props) {
           background: "#e5e7eb",
           borderRadius: "999px",
           overflow: "hidden",
-          marginTop: "8px",
         }}
       >
         <div
           style={{
-            width: `${props.retirementProgress}%`,
+            width: `${retirementProgress}%`,
             height: "100%",
             background: "#22c55e",
           }}
