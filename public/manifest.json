@@ -1,0 +1,9 @@
+{
+  "name": "ETF비서",
+  "short_name": "ETF비서",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f8f5",
+  "theme_color": "#16a34a",
+  "description": "국내상장 ETF 장기투자자를 위한 자산관리 앱"
+}
