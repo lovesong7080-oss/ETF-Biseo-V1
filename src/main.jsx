@@ -2,7 +2,7 @@ import { BarChart3, Home, Plus, Settings, Trash2, Wallet } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import AccountCard from "./components/AccountCard";
-
+import FireCard from './components/FireCard';
 import './index.css';
 
 const ACCOUNTS = ['개인연금', 'DC퇴직연금', '개인종합계좌', 'ISA'];
@@ -650,24 +650,11 @@ if (needAmount.채권 > 0 || investStyle === "safe") {
               </div>
             </div>
 
-            <div className="card">
-              <h2>🔥 FIRE 분석</h2>
-
-              <div className="row">
-                <span>80세 예상자산</span>
-                <b>{fireAsset80.toLocaleString()}만원</b>
-              </div>
-
-              <div className="row">
-                <span>90세 예상자산</span>
-                <b>{fireAsset90.toLocaleString()}만원</b>
-              </div>
-
-              <div className="row">
-                <span>100세 예상자산</span>
-                <b>{fireAsset100.toLocaleString()}만원</b>
-              </div>
-            </div>
+            <FireCard
+              fireAsset80={fireAsset80}
+              fireAsset90={fireAsset90}
+              fireAsset100={fireAsset100}
+            />
             
             <AccountCard
               ACCOUNTS={ACCOUNTS}
