@@ -2,6 +2,7 @@ import { BarChart3, Home, Plus, Settings, Trash2, Wallet } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import AccountCard from "./components/AccountCard";
+import RetirementCard from './components/RetirementCard';
 import './index.css';
 
 const ACCOUNTS = ['개인연금', 'DC퇴직연금', '개인종합계좌', 'ISA'];
@@ -440,6 +441,15 @@ if (needAmount.채권 > 0 || investStyle === "safe") {
     />
   </div>
 </div>
+            <RetirementCard
+                yearsLeft={yearsLeft}
+                monthlyGap={monthlyGap}
+                neededRetirementAsset={neededRetirementAsset}
+                currentAsset={currentAsset}
+                shortageAsset={shortageAsset}
+                monthlySavingNeed={monthlySavingNeed}
+                retirementProgress={retirementProgress}
+                />
             <FireCard />
 
             
