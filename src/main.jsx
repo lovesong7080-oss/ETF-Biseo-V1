@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import AccountCard from "./components/AccountCard";
 import FireCard from './components/FireCard';
+import GrowthCard from './components/GrowthCard';
 import './index.css';
 
 const ACCOUNTS = ['개인연금', 'DC퇴직연금', '개인종합계좌', 'ISA'];
@@ -557,59 +558,13 @@ if (needAmount.채권 > 0 || investStyle === "safe") {
                   <b>{dividendGap.toLocaleString()}만원/월</b>
                 </div>
 
-                <div className="row">
-                  <span>10년 후 자산</span>
-                  <b>{asset10Year.toLocaleString()}만원</b>
-                </div>
-
-                <div className="row">
-                  <span>20년 후 자산</span>
-                  <b>{asset20Year.toLocaleString()}만원</b>
-                </div>
-
-                <div className="row">
-                  <span>30년 후 자산</span>
-                  <b>{asset30Year.toLocaleString()}만원</b>
-                </div> 
-
-                <div style={{ marginTop: "18px" }}>
-                  <b>📈 자산 성장 그래프</b>
-
-                  {growthData.map((item) => (
-                    <div key={item.year} style={{ marginTop: "10px" }}>
-                      <div className="row">
-                        <span>{item.year === 0 ? "현재" : `${item.year}년 후`}</span>
-                        <b>{item.value.toLocaleString()}만원</b>
-                      </div>
-
-                      <div
-                        style={{
-                          height: "8px",
-                          background: "#e5e7eb",
-                          borderRadius: "999px",
-                          overflow: "hidden",
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: `${Math.min(100, (item.value / asset30Year) * 100)}%`,
-                            height: "100%",
-                            background: "#22c55e",
-                          }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>  
-
-                <div className="row">
-                  <span>목표 대비</span>
-                  <b>
-                    {yearDiff <= 0
-                      ? `✅ ${Math.abs(yearDiff)}년 여유`
-                      : `⏰ ${yearDiff}년 추가`}
-                  </b>
-                </div>
+                <GrowthCard
+                  asset10Year={asset10Year}
+                  asset20Year={asset20Year}
+                  asset30Year={asset30Year}
+                  growthData={growthData}
+                  yearDiff={yearDiff}
+                />
 
                 <div style={{ marginTop: "20px" }}>
                   <b>🎯 목표 달성 시뮬레이션</b>
