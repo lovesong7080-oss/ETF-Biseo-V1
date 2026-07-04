@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import AccountCard from "./components/AccountCard";
 import FireCard from './components/FireCard';
+import GrowthCard from './components/GrowthCard';
 import RetirementCard from './components/RetirementCard';
 import SimulationCard from './components/SimulationCard';
 import './index.css';
@@ -452,6 +453,14 @@ if (needAmount.채권 > 0 || investStyle === "safe") {
                 monthlySavingNeed={monthlySavingNeed}
                 retirementProgress={retirementProgress}
                 />
+
+            <GrowthCard
+                asset10Year={asset10Year}
+                asset20Year={asset20Year}
+                asset30Year={asset30Year}
+                growthData={growthData}
+                yearDiff={yearDiff}
+                />    
 
             <SimulationCard
                 simulationResult={simulationResult}
