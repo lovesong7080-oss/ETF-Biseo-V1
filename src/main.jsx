@@ -191,6 +191,30 @@ const neededRetirementAsset = futureMonthlyGap * 12 * 25;
         Math.ceil((neededRetirementAsset - futureAssetManwon) / (monthlyInvest * 12))
       : 9999;
 
+  const fireAsset80 = Math.round(
+    futureAssetManwon *
+    Math.pow(
+      1 + (expectedReturn - inflationRate) / 100,
+      Math.max(0, 80 - retireAge)
+    )
+  );
+
+  const fireAsset90 = Math.round(
+    futureAssetManwon *
+    Math.pow(
+      1 + (expectedReturn - inflationRate) / 100,
+      Math.max(0, 90 - retireAge)
+    )
+  );
+
+  const fireAsset100 = Math.round(
+    futureAssetManwon *
+    Math.pow(
+      1 + (expectedReturn - inflationRate) / 100,
+      Math.max(0, 100 - retireAge)
+    )
+  ); 
+
   const yearDiff = estimatedRetireYear - retireYear;
 
   const currentWeight = {
@@ -625,6 +649,26 @@ if (needAmount.채권 > 0 || investStyle === "safe") {
                 </div>
               </div>
             </div>
+
+            <div className="card">
+              <h2>🔥 FIRE 분석</h2>
+
+              <div className="row">
+                <span>80세 예상자산</span>
+                <b>{fireAsset80.toLocaleString()}만원</b>
+              </div>
+
+              <div className="row">
+                <span>90세 예상자산</span>
+                <b>{fireAsset90.toLocaleString()}만원</b>
+              </div>
+
+              <div className="row">
+                <span>100세 예상자산</span>
+                <b>{fireAsset100.toLocaleString()}만원</b>
+              </div>
+            </div>
+            
             <AccountCard
               ACCOUNTS={ACCOUNTS}
               summary={summary}
