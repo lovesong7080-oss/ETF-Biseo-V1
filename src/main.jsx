@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client';
 import AccountCard from "./components/AccountCard";
 import FireCard from './components/FireCard';
 import GrowthCard from './components/GrowthCard';
+import SimulationCard from "./components/SimulationCard";
 import './index.css';
 
 const ACCOUNTS = ['개인연금', 'DC퇴직연금', '개인종합계좌', 'ISA'];
@@ -566,44 +567,15 @@ if (needAmount.채권 > 0 || investStyle === "safe") {
                   yearDiff={yearDiff}
                 />
 
-                <div style={{ marginTop: "20px" }}>
-                  <b>🎯 목표 달성 시뮬레이션</b>
-
-                  {simulationResult.map((item) => (
-                    <div className="row" key={item.invest}>
-                      <span>월 {item.invest}만원 투자</span>
-                      <b>{item.year}년</b>
-                    </div>
-                  ))}
-                </div>
-                
-                
-
-                <div className="row">
-                  <span>목표 달성</span>
-                  <b>
-                    {futureAssetManwon >= neededRetirementAsset ? "✅ 가능" : "❌ 부족"}
-                  </b>
-                </div>
-
-                <div
-                  style={{
-                    height: "10px",
-                    background: "#e5e7eb",
-                    borderRadius: "999px",
-                    overflow: "hidden",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: `${retirementProgress}%`,
-                      height: "100%",
-                      background: "#22c55e",
-                    }}
-                  />
-                </div>
-              </div>
+            </div>    
             </div>
+            
+            <SimulationCard
+              simulationResult={simulationResult}
+              futureAssetManwon={futureAssetManwon}
+              neededRetirementAsset={neededRetirementAsset}
+              retirementProgress={retirementProgress}
+            />   
 
             <FireCard
               fireAsset80={fireAsset80}
