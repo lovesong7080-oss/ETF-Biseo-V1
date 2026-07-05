@@ -9,6 +9,7 @@ import RecommendedEtfCard from "./components/RecommendedEtfCard";
 import RetirementCard from "./components/RetirementCard";
 import RetirementGoalCard from "./components/RetirementGoalCard";
 import SimulationCard from "./components/SimulationCard";
+import TotalAssetCard from "./components/TotalAssetCard";
 import './index.css';
 
 const ACCOUNTS = ['개인연금', 'DC퇴직연금', '개인종합계좌', 'ISA'];
@@ -345,23 +346,14 @@ if (needAmount.채권 > 0 || investStyle === "safe") {
       <main className="content">
         {tab === 'home' && (
           <section>
-            <div className="hero-card">
-              <span className="label">총자산</span>
-              <strong>{won(summary.total)}</strong>
-              <div className="mini-grid">
-                <div><span>총 손익</span><b>{won(summary.profit)}</b></div>
-                <div>
-                  <span>수익률</span>
-                  <b>
-                    {summary.total
-                      ? ((summary.profit / (summary.total - summary.profit)) * 100).toFixed(2)
-                      : 0}%
-                  </b>
-                </div>
-              </div>
-            </div>
+            
 
 
+            <TotalAssetCard
+              summary={summary}
+              won={won}
+            />
+            
             <InvestStyleCard
               investStyle={investStyle}
               setInvestStyle={setInvestStyle}
