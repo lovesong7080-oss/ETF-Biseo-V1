@@ -1,16 +1,17 @@
-import { BarChart3, Home, Plus, Settings, Wallet } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import AccountCard from "./components/AccountCard";
 import AddHoldingCard from "./components/AddHoldingCard";
 import AiBriefingCard from "./components/AiBriefingCard";
 import AssetAnalysisCard from "./components/AssetAnalysisCard";
+import BottomNav from "./components/BottomNav";
 import FireCard from './components/FireCard';
 import HoldingsListCard from "./components/HoldingsListCard";
 import InvestStyleCard from "./components/InvestStyleCard";
 import RecommendedEtfCard from "./components/RecommendedEtfCard";
 import RetirementCard from "./components/RetirementCard";
 import RetirementGoalCard from "./components/RetirementGoalCard";
+import SettingsCard from "./components/SettingsCard";
 import SimulationCard from "./components/SimulationCard";
 import TotalAssetCard from "./components/TotalAssetCard";
 import './index.css';
@@ -489,22 +490,15 @@ if (needAmount.채권 > 0 || investStyle === "safe") {
 
         {tab === 'settings' && (
           <section>
-            <div className="card">
-              <h2>설정</h2>
-              <p>자동 저장이 켜져 있습니다.</p>
-              <button className="danger" onClick={() => confirm('모든 데이터를 삭제할까요?') && setHoldings([])}>전체 데이터 삭제</button>
-            </div>
+            <SettingsCard setHoldings={setHoldings} />
+            
           </section>
         )}
       </main>
 
-      <nav className="bottom-nav">
-        <button className={tab==='home' ? 'active' : ''} onClick={() => setTab('home')}><Home size={20}/>홈</button>
-        <button className={tab==='accounts' ? 'active' : ''} onClick={() => setTab('accounts')}><Wallet size={20}/>계좌</button>
-        <button className="add-btn" onClick={() => setTab('add')}><Plus size={24}/></button>
-        <button className={tab==='analysis' ? 'active' : ''} onClick={() => setTab('analysis')}><BarChart3 size={20}/>분석</button>
-        <button className={tab==='settings' ? 'active' : ''} onClick={() => setTab('settings')}><Settings size={20}/>설정</button>
-      </nav>
+      <BottomNav tab={tab} setTab={setTab} /> 
+          
+      
     </div>
   );
 }
