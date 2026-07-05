@@ -2,6 +2,7 @@ import { BarChart3, Home, Plus, Settings, Wallet } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import AccountCard from "./components/AccountCard";
+import AddHoldingCard from "./components/AddHoldingCard";
 import AiBriefingCard from "./components/AiBriefingCard";
 import FireCard from './components/FireCard';
 import HoldingsListCard from "./components/HoldingsListCard";
@@ -448,51 +449,24 @@ if (needAmount.채권 > 0 || investStyle === "safe") {
 
         {tab === 'add' && (
           <section>
-            <div className="card form-card">
-              <h2>ETF 추가</h2>
-              <label>계좌</label>
-              <select value={account} onChange={e => setAccount(e.target.value)}>
-                {ACCOUNTS.map(a => <option key={a}>{a}</option>)}
-              </select>
-
-              <label>ETF 검색</label>
-<input
-  value={search}
-  onChange={e => setSearch(e.target.value)}
-  placeholder="예: KODEX, 미국, 반도체"
-  inputMode="text"
-/>
-
-<div className="etf-list">
-  {filteredEtfs.map(e => (
-    <button
-      key={e.name}
-      className={etfName === e.name ? 'etf-item selected' : 'etf-item'}
-      onClick={() => setEtfName(e.name)}
-    >
-      <b>{e.name}</b>
-      <span>{e.region} · {e.type} · {e.theme}</span>
-    </button>
-  ))}
-</div>
-              <label>평균매수가 (원)</label>
-              <input
-                value={avgPrice}
-                onChange={e => setAvgPrice(e.target.value.replace(/[^0-9]/g, ''))}
-                placeholder="예: 25000"
-                inputMode="numeric"
-                />
-                <label>현재가 (원)</label>
-                <input
-                  value={currentPrice}
-                  onChange={e => setCurrentPrice(e.target.value.replace(/[^0-9]/g, ''))}
-                  placeholder="예: 27500"
-                  inputMode="numeric"
-                  />
-              <label>평가금액 (만원 단위)</label>
-              <input value={amountManwon} onChange={e => setAmountManwon(e.target.value.replace(/[^0-9]/g, ''))} placeholder="예: 2500 = 2,500만원" inputMode="numeric" />
-              <button className="primary" onClick={addHolding}>저장</button>
-            </div>
+            <AddHoldingCard
+              ACCOUNTS={ACCOUNTS}
+              account={account}
+              setAccount={setAccount}
+              search={search}
+              setSearch={setSearch}
+              filteredEtfs={filteredEtfs}
+              etfName={etfName}
+              setEtfName={setEtfName}
+              avgPrice={avgPrice}
+              setAvgPrice={setAvgPrice}
+              currentPrice={currentPrice}
+              setCurrentPrice={setCurrentPrice}
+              amountManwon={amountManwon}
+              setAmountManwon={setAmountManwon}
+              addHolding={addHolding}
+            />
+            
           </section>
         )}
 
