@@ -14,13 +14,14 @@ import RetirementGoalCard from "./components/RetirementGoalCard";
 import SettingsCard from "./components/SettingsCard";
 import SimulationCard from "./components/SimulationCard";
 import TotalAssetCard from "./components/TotalAssetCard";
-import { ACCOUNTS, ETF_DB } from "./data/etfData";
+import { ACCOUNTS, DEFAULT_TARGET, ETF_DB } from "./data/etfData";
 import useLocalStorage from "./hooks/useLocalStorage";
 import './index.css';
 import {
   calculatePortfolioSummary,
   calculateRetirementPlan,
 } from "./utils/calculations";
+import { filterEtfsByName } from "./utils/etfFilters";
 import { pct, won } from "./utils/format";
 import {
   calculateHoldingAmount,
@@ -52,15 +53,9 @@ function App() {
   const [dividendYield, setDividendYield] = useState(3);
   const [inflationRate, setInflationRate] = useState(2.5);
   
-const [target, setTarget] = useState({
-  미국: 60,
-  한국: 20,
-  채권: 20
-});
+  const [target, setTarget] = useState(DEFAULT_TARGET);
 
-const filteredEtfs = ETF_DB.filter(etf =>
-  etf.name.toLowerCase().includes(search.toLowerCase())
-);
+  const filteredEtfs = filterEtfsByName(ETF_DB, search);
 
   const {
     currentYear,

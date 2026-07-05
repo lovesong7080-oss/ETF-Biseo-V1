@@ -10,3 +10,8 @@ export const ETF_DB = [
   { name: "TIGER 미국S&P500", region: "미국", type: "주식", theme: "S&P500" },
   { name: "TIGER 미국나스닥100", region: "미국", type: "주식", theme: "나스닥" },
 ];
+export const DEFAULT_TARGET = {
+  미국: 60,
+  한국: 20,
+  채권: 20,
+};
