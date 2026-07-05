@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import AccountCard from "./components/AccountCard";
 import AddHoldingCard from "./components/AddHoldingCard";
@@ -15,35 +15,14 @@ import SettingsCard from "./components/SettingsCard";
 import SimulationCard from "./components/SimulationCard";
 import TotalAssetCard from "./components/TotalAssetCard";
 import { ACCOUNTS, ETF_DB } from "./data/etfData";
+import useLocalStorage from "./hooks/useLocalStorage";
 import './index.css';
+import { pct, won } from "./utils/format";
 
 
 
-function won(n) {
-  return Number(n || 0).toLocaleString('ko-KR') + '원';
-}
 
-function pct(value, total) {
-  if (!total) return '0%';
-  return Math.round((value / total) * 100) + '%';
-}
 
-function useLocalStorage(key, initialValue) {
-  const [value, setValue] = useState(() => {
-    try {
-      const saved = localStorage.getItem(key);
-      return saved ? JSON.parse(saved) : initialValue;
-    } catch {
-      return initialValue;
-    }
-  });
-
-  useEffect(() => {
-    localStorage.setItem(key, JSON.stringify(value));
-  }, [key, value]);
-
-  return [value, setValue];
-}
 
 function App() {
   const [tab, setTab] = useState('home');
