@@ -14,20 +14,10 @@ import RetirementGoalCard from "./components/RetirementGoalCard";
 import SettingsCard from "./components/SettingsCard";
 import SimulationCard from "./components/SimulationCard";
 import TotalAssetCard from "./components/TotalAssetCard";
+import { ACCOUNTS, ETF_DB } from "./data/etfData";
 import './index.css';
 
-const ACCOUNTS = ['개인연금', 'DC퇴직연금', '개인종합계좌', 'ISA'];
 
-const ETF_DB = [
-  { name: 'KODEX 200', region: '한국', type: '주식', theme: '시장대표' },
-  { name: 'HANARO Fn K-반도체', region: '한국', type: '주식', theme: '반도체' },
-  { name: 'SOL 반도체소부장', region: '한국', type: '주식', theme: '반도체' },
-  { name: 'KODEX 미국채', region: '미국', type: '채권', theme: '채권' },
-  { name: 'KODEX 미국나스닥100', region: '미국', type: '주식', theme: '나스닥' },
-  { name: 'KODEX 미국S&P500', region: '미국', type: '주식', theme: 'S&P500' },
-  { name: 'TIGER 미국S&P500', region: '미국', type: '주식', theme: 'S&P500' },
-  { name: 'TIGER 미국나스닥100', region: '미국', type: '주식', theme: '나스닥' }
-];
 
 function won(n) {
   return Number(n || 0).toLocaleString('ko-KR') + '원';
