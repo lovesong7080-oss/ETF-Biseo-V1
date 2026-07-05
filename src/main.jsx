@@ -2,8 +2,10 @@ import { BarChart3, Home, Plus, Settings, Trash2, Wallet } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import AccountCard from "./components/AccountCard";
+import AiBriefingCard from "./components/AiBriefingCard";
 import FireCard from './components/FireCard';
 import RetirementCard from "./components/RetirementCard";
+import RetirementGoalCard from "./components/RetirementGoalCard";
 import SimulationCard from "./components/SimulationCard";
 import './index.css';
 
@@ -371,16 +373,14 @@ if (needAmount.채권 > 0 || investStyle === "safe") {
                 <option value="safe">안정형</option>
               </select>
              
-              <h2>🤖 AI 브리핑</h2>
-              <p>{briefing}</p>
-              {aiAdvice.length > 0 && (
-                <ul style={{ marginTop: "10px", paddingLeft: "18px" }}>
-                  {aiAdvice.map((item, i) => (
-                    <li key={i}>{item}</li>
-                  ))}
-                </ul>
-              )}
+              
             </div>
+
+            <AiBriefingCard
+              briefing={briefing}
+              aiAdvice={aiAdvice}
+            />
+                    
             {recommendedEtfGroups.length > 0 && (
               <div className="card">
                 <h2>📈 추천 ETF</h2>
@@ -400,51 +400,19 @@ if (needAmount.채권 > 0 || investStyle === "safe") {
                 ))}
               </div>
             )}
-            <div className="card">
-  <h2>🎯 은퇴 목표</h2>
 
-  <div className="row">
-    <span>은퇴 나이</span>
-    <input
-      type="number"
-      value={retireAge}
-      onChange={(e) => setRetireAge(Number(e.target.value))}
-      style={{ width: "80px" }}
-    />
-  </div>
-
-  <div className="row">
-    <span>은퇴 예정</span>
-    <input
-      type="number"
-      value={retireYear}
-      onChange={(e) => setRetireYear(Number(e.target.value))}
-      style={{ width: "90px" }}
-    />
-  </div>
-
-  <div className="row">
-    <span>국민연금(만원)</span>
-    <input
-      type="number"
-      value={pensionManwon}
-      onChange={(e) => setPensionManwon(Number(e.target.value))}
-      style={{ width: "90px" }}
-    />
-  </div>
-
-  <div className="row">
-    <span>목표 생활비(만원)</span>
-    <input
-      type="number"
-      value={livingCostManwon}
-      onChange={(e) => setLivingCostManwon(Number(e.target.value))}
-      style={{ width: "90px" }}
-    />
-  </div>
-</div>
            
-            
+            <RetirementGoalCard
+              retireAge={retireAge}
+              setRetireAge={setRetireAge}
+              retireYear={retireYear}
+              setRetireYear={setRetireYear}
+              pensionManwon={pensionManwon}
+              setPensionManwon={setPensionManwon}
+              livingCostManwon={livingCostManwon}
+              setLivingCostManwon={setLivingCostManwon}
+            /> 
+
             <RetirementCard
               yearsLeft={yearsLeft}
               monthlyGap={monthlyGap}
