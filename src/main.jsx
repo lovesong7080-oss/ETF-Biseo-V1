@@ -503,14 +503,6 @@ if (needAmount.채권 > 0 || investStyle === "safe") {
   );
 }
 
-function Bar({ label, value, total }) {
-  const width = total ? Math.round((value / total) * 100) : 0;
-  return (
-    <div className="bar-wrap">
-      <div className="bar-top"><span>{label}</span><b>{pct(value, total)}</b></div>
-      <div className="bar-bg"><div className="bar-fill" style={{ width: `${width}%` }} /></div>
-    </div>
-  );
-}
+
 
 createRoot(document.getElementById('root')).render(<App />);
