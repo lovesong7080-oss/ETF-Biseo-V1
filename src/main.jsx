@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client';
 import AccountCard from "./components/AccountCard";
 import AiBriefingCard from "./components/AiBriefingCard";
 import FireCard from './components/FireCard';
+import InvestStyleCard from "./components/InvestStyleCard";
 import RecommendedEtfCard from "./components/RecommendedEtfCard";
 import RetirementCard from "./components/RetirementCard";
 import RetirementGoalCard from "./components/RetirementGoalCard";
@@ -360,23 +361,12 @@ if (needAmount.채권 > 0 || investStyle === "safe") {
               </div>
             </div>
 
-            <div className="card">
-              <h2>🎯 투자 성향</h2>
 
-              <select
-                value={investStyle}
-                onChange={(e) => setInvestStyle(e.target.value)}
-                style={{ width: "100%", padding: "10px", marginTop: "10px" }}
-              >
-                <option value="balanced">균형형</option>
-                <option value="growth">성장형</option>
-                <option value="dividend">배당형</option>
-                <option value="safe">안정형</option>
-              </select>
-             
-              
-            </div>
-
+            <InvestStyleCard
+              investStyle={investStyle}
+              setInvestStyle={setInvestStyle}
+            />
+            
             <AiBriefingCard
               briefing={briefing}
               aiAdvice={aiAdvice}
