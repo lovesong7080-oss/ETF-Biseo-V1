@@ -22,6 +22,11 @@ import {
   calculateRetirementPlan,
 } from "./utils/calculations";
 import { pct, won } from "./utils/format";
+import {
+  calculateHoldingAmount,
+  createHolding,
+  removeHoldingById,
+} from "./utils/holdingActions";
 
 
 
@@ -277,30 +282,34 @@ if (needAmount.채권 > 0 || investStyle === "safe") {
   });
 }
   const addHolding = () => {
-    const amount = Number(amountManwon) * 10000;
-    if (!amount || amount <= 0) return alert('평가금액을 만원 단위로 입력해 주세요. 예: 2500');
-    const meta = ETF_DB.find(e => e.name === etfName);
-    setHoldings([
-      ...holdings,
-      {
-  id: Date.now(),
-  account,
-  amount,
-  avgPrice: Number(avgPrice || 0),
-  currentPrice: Number(currentPrice || 0),
-  ...meta
-}
-    ]);
-    setAmountManwon('');
-    setAvgPrice('');
-    setCurrentPrice('');
-    setEtfName(ETF_DB[0].name);
-    setAccount('개인연금');
-    setTab('home');
-    
-  };
+  const amount = calculateHoldingAmount(amountManwon);
 
-  const removeHolding = (id) => setHoldings(holdings.filter(h => h.id !== id));
+  if (!amount || amount <= 0) {
+    return alert('평가금액을 만원 단위로 입력해 주세요. 예: 2500');
+  }
+
+  const newHolding = createHolding({
+    etfName,
+    etfDb: ETF_DB,
+    account,
+    amountManwon,
+    avgPrice,
+    currentPrice,
+  });
+
+  setHoldings([...holdings, newHolding]);
+
+  setAmountManwon('');
+  setAvgPrice('');
+  setCurrentPrice('');
+  setEtfName(ETF_DB[0].name);
+  setAccount('개인연금');
+  setTab('home');
+};
+
+  const removeHolding = (id) => {
+    setHoldings(removeHoldingById(holdings, id));
+  };
 
   return (
     <div className="app-shell">
