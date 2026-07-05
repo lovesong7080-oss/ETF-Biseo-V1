@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client';
 import AccountCard from "./components/AccountCard";
 import AiBriefingCard from "./components/AiBriefingCard";
 import FireCard from './components/FireCard';
+import RecommendedEtfCard from "./components/RecommendedEtfCard";
 import RetirementCard from "./components/RetirementCard";
 import RetirementGoalCard from "./components/RetirementGoalCard";
 import SimulationCard from "./components/SimulationCard";
@@ -381,27 +382,13 @@ if (needAmount.채권 > 0 || investStyle === "safe") {
               aiAdvice={aiAdvice}
             />
                     
-            {recommendedEtfGroups.length > 0 && (
-              <div className="card">
-                <h2>📈 추천 ETF</h2>
+            
 
-                {recommendedEtfGroups.map((group, i) => (
-                  <div key={i} style={{ marginTop: "12px" }}>
-                    <b>{group.title}</b>
-                    <p style={{ fontSize: "13px", color: "#666", marginTop: "6px" }}>
-                      {group.desc}
-                    </p>
-                    <ul style={{ marginTop: "6px", paddingLeft: "18px" }}>
-                      {group.items.map((etf, j) => (
-                        <li key={j}>{etf}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-            )}
 
-           
+            <RecommendedEtfCard
+              recommendedEtfGroups={recommendedEtfGroups}
+            />
+                       
             <RetirementGoalCard
               retireAge={retireAge}
               setRetireAge={setRetireAge}
