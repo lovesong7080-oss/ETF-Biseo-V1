@@ -22,3 +22,25 @@ export const DEFAULT_ETF_NAME = ETF_DB[0].name;
 export const DEFAULT_TAB = 'home';
 
 export const HOLDINGS_STORAGE_KEY = 'etf-biseo-holdings';
+
+export const DEFAULT_HOLDING_INPUTS = {
+  amountManwon: '',
+  avgPrice: '',
+  currentPrice: '',
+};
+
+export const DEFAULT_INVEST_STYLE = 'balanced';
+
+export const DEFAULT_RETIREMENT_INPUTS = {
+  retireAge: 65,
+  retireYear: 2036,
+  pensionManwon: 150,
+  livingCostManwon: 300,
+};
+
+export const DEFAULT_SIMULATION_INPUTS = {
+  monthlyInvest: 150,
+  expectedReturn: 10,
+  dividendYield: 3,
+  inflationRate: 2.5,
+};

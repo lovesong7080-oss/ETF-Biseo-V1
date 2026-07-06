@@ -18,6 +18,10 @@ import {
   ACCOUNTS,
   DEFAULT_ACCOUNT,
   DEFAULT_ETF_NAME,
+  DEFAULT_HOLDING_INPUTS,
+  DEFAULT_INVEST_STYLE,
+  DEFAULT_RETIREMENT_INPUTS,
+  DEFAULT_SIMULATION_INPUTS,
   DEFAULT_TAB,
   DEFAULT_TARGET,
   ETF_DB,
@@ -44,23 +48,23 @@ import { validateHoldingInput } from "./utils/validators";
 
 function App() {
   const [tab, setTab] = useState(DEFAULT_TAB);
-  const [investStyle, setInvestStyle] = useState("balanced");
+  const [investStyle, setInvestStyle] = useState(DEFAULT_INVEST_STYLE);
   const [holdings, setHoldings] = useLocalStorage(HOLDINGS_STORAGE_KEY, []);
   const [account, setAccount] = useState(DEFAULT_ACCOUNT);
   const [etfName, setEtfName] = useState(DEFAULT_ETF_NAME);
   const [search, setSearch] = useState('');
-  const [amountManwon, setAmountManwon] = useState('');
-  const [avgPrice, setAvgPrice] = useState('');
-  const [currentPrice, setCurrentPrice] = useState('');
-  const [retireAge, setRetireAge] = useState(65);
-  const [retireYear, setRetireYear] = useState(2036);
-  const [pensionManwon, setPensionManwon] = useState(150);
-  const [livingCostManwon, setLivingCostManwon] = useState(300);
-  const [monthlyInvest, setMonthlyInvest] = useState(150);
-  const [expectedReturn, setExpectedReturn] = useState(10);
-  const [dividendYield, setDividendYield] = useState(3);
-  const [inflationRate, setInflationRate] = useState(2.5);
-  
+  const [amountManwon, setAmountManwon] = useState(DEFAULT_HOLDING_INPUTS.amountManwon);
+  const [avgPrice, setAvgPrice] = useState(DEFAULT_HOLDING_INPUTS.avgPrice);
+  const [currentPrice, setCurrentPrice] = useState(DEFAULT_HOLDING_INPUTS.currentPrice);
+  const [retireAge, setRetireAge] = useState(DEFAULT_RETIREMENT_INPUTS.retireAge);
+  const [retireYear, setRetireYear] = useState(DEFAULT_RETIREMENT_INPUTS.retireYear);
+  const [pensionManwon, setPensionManwon] = useState(DEFAULT_RETIREMENT_INPUTS.pensionManwon);
+  const [livingCostManwon, setLivingCostManwon] = useState(DEFAULT_RETIREMENT_INPUTS.livingCostManwon);
+  const [monthlyInvest, setMonthlyInvest] = useState(DEFAULT_SIMULATION_INPUTS.monthlyInvest);
+  const [expectedReturn, setExpectedReturn] = useState(DEFAULT_SIMULATION_INPUTS.expectedReturn);
+  const [dividendYield, setDividendYield] = useState(DEFAULT_SIMULATION_INPUTS.dividendYield);
+  const [inflationRate, setInflationRate] = useState(DEFAULT_SIMULATION_INPUTS.inflationRate);
+    
   const [target, setTarget] = useState(DEFAULT_TARGET);
 
   const filteredEtfs = filterEtfsByName(ETF_DB, search);
@@ -306,9 +310,9 @@ if (needAmount.채권 > 0 || investStyle === "safe") {
 
   setHoldings([...holdings, newHolding]);
 
-  setAmountManwon('');
-  setAvgPrice('');
-  setCurrentPrice('');
+  setAmountManwon(DEFAULT_HOLDING_INPUTS.amountManwon);
+  setAvgPrice(DEFAULT_HOLDING_INPUTS.avgPrice);
+  setCurrentPrice(DEFAULT_HOLDING_INPUTS.currentPrice);
   setEtfName(DEFAULT_ETF_NAME);
   setAccount(DEFAULT_ACCOUNT);
   setTab(DEFAULT_TAB);
