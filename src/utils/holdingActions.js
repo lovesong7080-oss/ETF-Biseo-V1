@@ -26,3 +26,14 @@ export function createHolding({
 export function removeHoldingById(holdings, id) {
   return holdings.filter(h => h.id !== id);
 }
+
+export function updateHoldingById(holdings, id, updates) {
+  return holdings.map((holding) =>
+    holding.id === id
+      ? {
+          ...holding,
+          ...updates,
+        }
+      : holding
+  );
+}

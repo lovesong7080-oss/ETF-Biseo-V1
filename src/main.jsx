@@ -38,6 +38,7 @@ import { pct, won } from "./utils/format";
 import {
   createHolding,
   removeHoldingById,
+  updateHoldingById,
 } from "./utils/holdingActions";
 import { validateHoldingInput } from "./utils/validators";
 
@@ -322,6 +323,10 @@ if (needAmount.채권 > 0 || investStyle === "safe") {
     setHoldings(removeHoldingById(holdings, id));
   };
 
+  const updateHolding = (id, updates) => {
+    setHoldings(updateHoldingById(holdings, id, updates));
+  };
+
   return (
     <div className="app-shell">
       <header className="topbar">
@@ -428,6 +433,7 @@ if (needAmount.채권 > 0 || investStyle === "safe") {
               won={won}
               pct={pct}
               removeHolding={removeHolding}
+              updateHolding={updateHolding}
             />
             
           </section>
