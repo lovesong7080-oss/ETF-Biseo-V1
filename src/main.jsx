@@ -4,6 +4,7 @@ import AccountCard from "./components/AccountCard";
 import AddHoldingCard from "./components/AddHoldingCard";
 import AiBriefingCard from "./components/AiBriefingCard";
 import AssetAnalysisCard from "./components/AssetAnalysisCard";
+import AssetWeightChartCard from "./components/AssetWeightChartCard";
 import BottomNav from "./components/BottomNav";
 import FireCard from './components/FireCard';
 import HoldingsListCard from "./components/HoldingsListCard";
@@ -427,6 +428,12 @@ if (needAmount.채권 > 0 || investStyle === "safe") {
 
         {tab === 'accounts' && (
           <section>
+            <AssetWeightChartCard
+              holdings={holdings}
+              summary={summary}
+              won={won}
+            />
+
             <HoldingsListCard
               holdings={holdings}
               summary={summary}
