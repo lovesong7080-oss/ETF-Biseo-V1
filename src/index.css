@@ -362,3 +362,74 @@ input {
 .collapsible-content {
   padding: 0 18px 18px;
 }
+
+.settings-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.settings-summary {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #f7faf8;
+  border: 1px solid #edf1ee;
+}
+
+.settings-summary p {
+  margin: 4px 0;
+  font-size: 14px;
+  color: #4b5563;
+}
+
+.settings-notice {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #fff7ed;
+  color: #9a3412;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.settings-section {
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid #edf1ee;
+  background: #ffffff;
+}
+
+.settings-section h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+}
+
+.settings-section p {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: #6b766e;
+  line-height: 1.5;
+}
+
+.settings-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.settings-actions button {
+  flex: 1;
+  min-width: 140px;
+}
+
+.danger-zone {
+  border-color: #fecaca;
+  background: #fffafa;
+}
+
+.danger-zone h3 {
+  color: #b91c1c;
+}
+
+.danger-zone .danger {
+  width: 100%;
+}

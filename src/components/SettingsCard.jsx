@@ -108,41 +108,62 @@ export default function SettingsCard({ holdings, setHoldings }) {
   };
 
   return (
-    <div className="card">
-      <h2>설정</h2>
-      <p>자동 저장이 켜져 있습니다.</p>
-      <p>현재 보유 ETF: {holdingCount}개</p>
+    <div className="card settings-card">
+      <h2>⚙️ 설정</h2>
+
+      <div className="settings-summary">
+        <p>자동 저장이 켜져 있습니다.</p>
+        <p>
+          현재 보유 ETF: <strong>{holdingCount}개</strong>
+        </p>
+      </div>
 
       {!hasHoldings && (
-        <p>백업하려면 먼저 보유 ETF를 추가하세요.</p>
+        <p className="settings-notice">
+          백업하려면 먼저 보유 ETF를 추가하세요.
+        </p>
       )}
 
-      <button
-        onClick={handleBackupHoldings}
-        disabled={!hasHoldings}
-      >
-        보유 ETF 백업하기
-      </button>
+      <div className="settings-section">
+        <h3>데이터 관리</h3>
+        <p>보유 ETF 목록을 JSON 파일로 백업하거나 복원합니다.</p>
 
-      <button onClick={() => fileInputRef.current?.click()}>
-        보유 ETF 복원하기
-      </button>
+        <div className="settings-actions">
+          <button
+            onClick={handleBackupHoldings}
+            disabled={!hasHoldings}
+          >
+            보유 ETF 백업하기
+          </button>
 
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept=".json,application/json"
-        onChange={handleRestoreHoldings}
-        style={{ display: "none" }}
-      />
+          <button onClick={() => fileInputRef.current?.click()}>
+            보유 ETF 복원하기
+          </button>
+        </div>
 
-      <button
-        className="danger"
-        onClick={handleResetHoldings}
-        disabled={!hasHoldings}
-      >
-        보유 ETF 전체 초기화
-      </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".json,application/json"
+          onChange={handleRestoreHoldings}
+          style={{ display: "none" }}
+        />
+      </div>
+
+      <div className="settings-section danger-zone">
+        <h3>위험 구역</h3>
+        <p>
+          보유 ETF 목록만 초기화합니다. 은퇴 계산값이나 다른 입력값은 삭제하지 않습니다.
+        </p>
+
+        <button
+          className="danger"
+          onClick={handleResetHoldings}
+          disabled={!hasHoldings}
+        >
+          보유 ETF 전체 초기화
+        </button>
+      </div>
     </div>
   );
 }
