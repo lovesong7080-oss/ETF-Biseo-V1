@@ -1,12 +1,12 @@
+import CollapsibleCard from "./CollapsibleCard";
+
 export default function AssetWeightChartCard({ holdings, summary, won }) {
   const total = summary.total;
 
   const sortedHoldings = [...holdings].sort((a, b) => b.amount - a.amount);
 
   return (
-    <div className="card">
-      <h2>📊 ETF별 자산 비중</h2>
-
+    <CollapsibleCard title="📊 ETF별 자산 비중" defaultOpen={false}>
       {holdings.length === 0 || total <= 0 ? (
         <p className="empty">자산 비중을 표시할 보유 ETF가 없습니다.</p>
       ) : (
@@ -37,6 +37,6 @@ export default function AssetWeightChartCard({ holdings, summary, won }) {
           })}
         </div>
       )}
-    </div>
+    </CollapsibleCard>
   );
 }

@@ -1,3 +1,5 @@
+import CollapsibleCard from "./CollapsibleCard";
+
 export default function RegionWeightChartCard({ holdings, summary, won }) {
   const total = summary.total;
 
@@ -21,9 +23,7 @@ export default function RegionWeightChartCard({ holdings, summary, won }) {
   );
 
   return (
-    <div className="card">
-      <h2>🌍 지역별 자산 비중</h2>
-
+    <CollapsibleCard title="🌍 지역별 자산 비중">
       {holdings.length === 0 || total <= 0 ? (
         <p className="empty">지역별 비중을 표시할 보유 ETF가 없습니다.</p>
       ) : (
@@ -54,6 +54,6 @@ export default function RegionWeightChartCard({ holdings, summary, won }) {
           })}
         </div>
       )}
-    </div>
+    </CollapsibleCard>
   );
 }
