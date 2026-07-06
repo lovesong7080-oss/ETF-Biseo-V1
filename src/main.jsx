@@ -474,7 +474,7 @@ if (needAmount.채권 > 0 || investStyle === "safe") {
 
         {tab === 'settings' && (
           <section>
-            <SettingsCard setHoldings={setHoldings} />
+            <SettingsCard holdings={holdings} setHoldings={setHoldings} />
             
           </section>
         )}
