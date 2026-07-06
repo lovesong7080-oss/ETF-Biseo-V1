@@ -15,3 +15,10 @@ export const DEFAULT_TARGET = {
   한국: 20,
   채권: 20,
 };
+export const DEFAULT_ACCOUNT = '개인연금';
+
+export const DEFAULT_ETF_NAME = ETF_DB[0].name;
+
+export const DEFAULT_TAB = 'home';
+
+export const HOLDINGS_STORAGE_KEY = 'etf-biseo-holdings';

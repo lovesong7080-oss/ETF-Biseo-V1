@@ -14,7 +14,15 @@ import RetirementGoalCard from "./components/RetirementGoalCard";
 import SettingsCard from "./components/SettingsCard";
 import SimulationCard from "./components/SimulationCard";
 import TotalAssetCard from "./components/TotalAssetCard";
-import { ACCOUNTS, DEFAULT_TARGET, ETF_DB } from "./data/etfData";
+import {
+  ACCOUNTS,
+  DEFAULT_ACCOUNT,
+  DEFAULT_ETF_NAME,
+  DEFAULT_TAB,
+  DEFAULT_TARGET,
+  ETF_DB,
+  HOLDINGS_STORAGE_KEY,
+} from "./data/etfData";
 import useLocalStorage from "./hooks/useLocalStorage";
 import './index.css';
 import {
@@ -35,11 +43,11 @@ import { validateHoldingInput } from "./utils/validators";
 
 
 function App() {
-  const [tab, setTab] = useState('home');
+  const [tab, setTab] = useState(DEFAULT_TAB);
   const [investStyle, setInvestStyle] = useState("balanced");
-  const [holdings, setHoldings] = useLocalStorage('etf-biseo-holdings', []);
-  const [account, setAccount] = useState('개인연금');
-  const [etfName, setEtfName] = useState(ETF_DB[0].name);
+  const [holdings, setHoldings] = useLocalStorage(HOLDINGS_STORAGE_KEY, []);
+  const [account, setAccount] = useState(DEFAULT_ACCOUNT);
+  const [etfName, setEtfName] = useState(DEFAULT_ETF_NAME);
   const [search, setSearch] = useState('');
   const [amountManwon, setAmountManwon] = useState('');
   const [avgPrice, setAvgPrice] = useState('');
@@ -301,9 +309,9 @@ if (needAmount.채권 > 0 || investStyle === "safe") {
   setAmountManwon('');
   setAvgPrice('');
   setCurrentPrice('');
-  setEtfName(ETF_DB[0].name);
-  setAccount('개인연금');
-  setTab('home');
+  setEtfName(DEFAULT_ETF_NAME);
+  setAccount(DEFAULT_ACCOUNT);
+  setTab(DEFAULT_TAB);
 };
 
   const removeHolding = (id) => {
