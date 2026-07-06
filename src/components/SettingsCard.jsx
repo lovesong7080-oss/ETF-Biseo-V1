@@ -1,4 +1,14 @@
 export default function SettingsCard({ setHoldings }) {
+  const handleResetHoldings = () => {
+    const ok = confirm(
+      "보유 ETF 목록을 모두 초기화할까요?\n이 작업은 되돌릴 수 없습니다."
+    );
+
+    if (!ok) return;
+
+    setHoldings([]);
+  };
+
   return (
     <div className="card">
       <h2>설정</h2>
@@ -6,11 +16,9 @@ export default function SettingsCard({ setHoldings }) {
 
       <button
         className="danger"
-        onClick={() =>
-          confirm("모든 데이터를 삭제할까요?") && setHoldings([])
-        }
+        onClick={handleResetHoldings}
       >
-        전체 데이터 삭제
+        보유 ETF 전체 초기화
       </button>
     </div>
   );
