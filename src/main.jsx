@@ -24,10 +24,10 @@ import {
 import { filterEtfsByName } from "./utils/etfFilters";
 import { pct, won } from "./utils/format";
 import {
-  calculateHoldingAmount,
   createHolding,
   removeHoldingById,
 } from "./utils/holdingActions";
+import { validateHoldingInput } from "./utils/validators";
 
 
 
@@ -277,13 +277,17 @@ if (needAmount.채권 > 0 || investStyle === "safe") {
   });
 }
   const addHolding = () => {
-  const amount = calculateHoldingAmount(amountManwon);
+    const validationError = validateHoldingInput({
+      amountManwon,
+      avgPrice,
+      currentPrice,
+    });
 
-  if (!amount || amount <= 0) {
-    return alert('평가금액을 만원 단위로 입력해 주세요. 예: 2500');
-  }
+    if (validationError) {
+      return alert(validationError);
+    }
 
-  const newHolding = createHolding({
+    const newHolding = createHolding({
     etfName,
     etfDb: ETF_DB,
     account,
