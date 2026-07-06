@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import AccountCard from "./components/AccountCard";
+import AccountWeightChartCard from "./components/AccountWeightChartCard";
 import AddHoldingCard from "./components/AddHoldingCard";
 import AiBriefingCard from "./components/AiBriefingCard";
 import AssetAnalysisCard from "./components/AssetAnalysisCard";
@@ -10,10 +11,12 @@ import FireCard from './components/FireCard';
 import HoldingsListCard from "./components/HoldingsListCard";
 import InvestStyleCard from "./components/InvestStyleCard";
 import RecommendedEtfCard from "./components/RecommendedEtfCard";
+import RegionWeightChartCard from "./components/RegionWeightChartCard";
 import RetirementCard from "./components/RetirementCard";
 import RetirementGoalCard from "./components/RetirementGoalCard";
 import SettingsCard from "./components/SettingsCard";
 import SimulationCard from "./components/SimulationCard";
+import ThemeWeightChartCard from "./components/ThemeWeightChartCard";
 import TotalAssetCard from "./components/TotalAssetCard";
 import {
   ACCOUNTS,
@@ -428,6 +431,24 @@ if (needAmount.채권 > 0 || investStyle === "safe") {
 
         {tab === 'accounts' && (
           <section>
+            <RegionWeightChartCard
+              holdings={holdings}
+              summary={summary}
+              won={won}
+            />
+
+            <ThemeWeightChartCard
+              holdings={holdings}
+              summary={summary}
+              won={won}
+            />
+
+            <AccountWeightChartCard
+              holdings={holdings}
+              summary={summary}
+              won={won}
+            />
+
             <AssetWeightChartCard
               holdings={holdings}
               summary={summary}
@@ -442,7 +463,6 @@ if (needAmount.채권 > 0 || investStyle === "safe") {
               removeHolding={removeHolding}
               updateHolding={updateHolding}
             />
-            
           </section>
         )}
 
