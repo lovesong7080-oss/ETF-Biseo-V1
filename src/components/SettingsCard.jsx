@@ -343,21 +343,31 @@ export default function SettingsCard({ holdings, setHoldings }) {
 
         <div className="settings-actions">
           <button
+            className="settings-action-button backup-holdings"
             onClick={handleBackupHoldings}
             disabled={!hasHoldings}
           >
             보유 ETF 백업하기
           </button>
 
-          <button onClick={handleBackupAllData}>
+          <button
+            className="settings-action-button backup-all"
+            onClick={handleBackupAllData}
+          >
             전체 데이터 백업하기
           </button>
 
-          <button onClick={() => fullRestoreFileInputRef.current?.click()}>
+          <button
+            className="settings-action-button restore-all"
+            onClick={() => fullRestoreFileInputRef.current?.click()}
+          >
             전체 데이터 복원하기
           </button>
 
-          <button onClick={() => fileInputRef.current?.click()}>
+          <button
+            className="settings-action-button restore-holdings"
+            onClick={() => fileInputRef.current?.click()}
+          >
             보유 ETF 복원하기
           </button>
         </div>

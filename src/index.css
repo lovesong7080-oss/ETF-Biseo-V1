@@ -433,3 +433,42 @@ input {
 .danger-zone .danger {
   width: 100%;
 }
+
+.settings-action-button {
+  border: none;
+  font-weight: 700;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.settings-action-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
+}
+
+.settings-action-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.settings-action-button.backup-holdings {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.settings-action-button.backup-all {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.settings-action-button.restore-all {
+  background: #f97316;
+  color: #ffffff;
+}
+
+.settings-action-button.restore-holdings {
+  background: #7c3aed;
+  color: #ffffff;
+}
