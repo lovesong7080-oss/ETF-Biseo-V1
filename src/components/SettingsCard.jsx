@@ -2,6 +2,7 @@ import { useRef } from "react";
 
 export default function SettingsCard({ holdings, setHoldings }) {
   const fileInputRef = useRef(null);
+  const fullRestoreFileInputRef = useRef(null);
   const holdingCount = holdings.length;
   const hasHoldings = holdingCount > 0;
 
@@ -91,6 +92,101 @@ export default function SettingsCard({ holdings, setHoldings }) {
     alert(`전체 데이터 백업 파일을 저장했습니다.\n보유 ETF: ${holdingCount}개`);
   };
 
+    const handleRestoreAllData = (event) => {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      try {
+        const backupData = JSON.parse(reader.result);
+
+        if (backupData.app !== "ETF-Biseo-V1") {
+          alert("ETF-Biseo-V1 전체 백업 파일이 아닙니다.");
+          return;
+        }
+
+        if (backupData.type !== "full-data-backup") {
+          alert("전체 데이터 백업 파일이 아닙니다.");
+          return;
+        }
+
+        const rawStorageData = backupData.data?.localStorageRaw;
+        const parsedStorageData = backupData.data?.localStorage;
+        const restoreStorageData = rawStorageData || parsedStorageData;
+
+        if (
+          !restoreStorageData ||
+          typeof restoreStorageData !== "object" ||
+          Array.isArray(restoreStorageData)
+        ) {
+          alert("복원할 전체 데이터가 없습니다.");
+          return;
+        }
+
+        const restoreKeys = Object.keys(restoreStorageData).filter((key) =>
+          key.startsWith("etf-biseo-")
+        );
+
+        if (restoreKeys.length === 0) {
+          alert("복원할 ETF-Biseo 데이터가 없습니다.");
+          return;
+        }
+
+        const ok = confirm(
+          `전체 데이터 ${restoreKeys.length}개 항목을 복원할까요?\n현재 ETF-Biseo 저장 데이터는 백업 파일 내용으로 교체됩니다.\n이 작업은 되돌릴 수 없습니다.`
+        );
+
+        if (!ok) return;
+
+        const currentKeys = [];
+
+        for (let i = 0; i < localStorage.length; i += 1) {
+          const key = localStorage.key(i);
+
+          if (key && key.startsWith("etf-biseo-")) {
+            currentKeys.push(key);
+          }
+        }
+
+        currentKeys.forEach((key) => {
+          localStorage.removeItem(key);
+        });
+
+        restoreKeys.forEach((key) => {
+          const value = restoreStorageData[key];
+
+          if (typeof value === "string") {
+            localStorage.setItem(key, value);
+          } else {
+            localStorage.setItem(key, JSON.stringify(value));
+          }
+        });
+
+        const restoredHoldings = backupData.data?.holdings;
+
+        if (Array.isArray(restoredHoldings)) {
+          setHoldings(restoredHoldings);
+        }
+
+        alert("전체 데이터 복원이 완료되었습니다. 화면을 새로고침합니다.");
+        window.location.reload();
+      } catch {
+        alert("파일을 읽는 중 오류가 발생했습니다. 전체 데이터 백업 JSON 파일인지 확인하세요.");
+      } finally {
+        event.target.value = "";
+      }
+    };
+
+    reader.onerror = () => {
+      alert("파일을 읽을 수 없습니다.");
+      event.target.value = "";
+    };
+
+    reader.readAsText(file);
+  };
   const handleRestoreHoldings = (event) => {
     const file = event.target.files?.[0];
 
