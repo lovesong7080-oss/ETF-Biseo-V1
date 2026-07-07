@@ -2,22 +2,28 @@
 import { calculateMonthlyBuyAllocation } from "../utils/monthlyBuyAllocation";
 
 const STORAGE_KEY = "etfBiseoMonthlyInvestAmount";
+const PRICE_STORAGE_KEY = "etfBiseoEtfPriceInputs";
 
 const TEXT = {
   eyebrow: "MONTHLY BUY ALLOCATION",
   title: "\uC774\uBC88 \uB2EC \uC790\uB3D9 \uB9E4\uC218 \uBC30\uBD84",
   description:
-    "\uC774\uBC88 \uB2EC \uC0C8\uB85C \uB123\uC744 \uD22C\uC790\uAE08\uB9CC \uAE30\uC900\uC73C\uB85C \uBD80\uC871\uD55C \uC790\uC0B0\uAD70\uC758 ETF \uB9E4\uC218 \uAE08\uC561\uC744 \uACC4\uC0B0\uD569\uB2C8\uB2E4. \uB9E4\uB3C4\uB294 \uBC18\uC601\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
+    "\uC774\uBC88 \uB2EC \uC0C8\uB85C \uB123\uC744 \uD22C\uC790\uAE08\uB9CC \uAE30\uC900\uC73C\uB85C \uBD80\uC871\uD55C \uC790\uC0B0\uAD70\uC758 ETF \uB9E4\uC218 \uAE08\uC561\uACFC \uB9E4\uC218 \uC218\uB7C9\uC744 \uACC4\uC0B0\uD569\uB2C8\uB2E4.",
   monthlyAmount: "\uC774\uBC88 \uB2EC \uD22C\uC790\uAE08",
   quickAmount: "\uBE60\uB978 \uAE08\uC561",
   totalBudget: "\uD22C\uC790\uAE08",
   allocatedAmount: "\uBC30\uBD84 \uAE08\uC561",
+  actualOrderAmount: "\uC2E4\uC81C \uC8FC\uBB38\uC561",
   remainingAmount: "\uB0A8\uC740 \uAE08\uC561",
   allocationRate: "\uBC30\uBD84\uB960",
   priority: "\uC6B0\uC120\uC21C\uC704",
   category: "\uBD84\uB958",
   recommendedEtf: "\uCD94\uCC9C ETF",
-  recommendedAmount: "\uCD94\uCC9C \uAE08\uC561",
+  plannedAmount: "\uCD94\uCC9C \uAE08\uC561",
+  currentPrice: "\uD604\uC7AC\uAC00",
+  buyShares: "\uB9E4\uC218 \uC218\uB7C9",
+  usedAmount: "\uC0AC\uC6A9 \uAE08\uC561",
+  itemCashLeft: "\uC794\uC561",
   reason: "\uC0AC\uC720",
   alternativeCandidates: "\uB300\uCCB4 \uD6C4\uBCF4",
   checklistTitle: "\uC2E4\uC804 \uC8FC\uBB38 \uCCB4\uD06C\uB9AC\uC2A4\uD2B8",
@@ -25,7 +31,10 @@ const TEXT = {
     "\uACC4\uC0B0 \uAE30\uC900: \uBAA9\uD45C \uBE44\uC911 \uB300\uBE44 \uBD80\uC871 \uAE08\uC561\uC774 \uD070 \uD56D\uBAA9\uBD80\uD130 1,000\uC6D0 \uB2E8\uC704\uB85C \uBC30\uBD84\uD569\uB2C8\uB2E4.",
   noSell:
     "\uBE44\uC911 \uCD08\uACFC \uC790\uC0B0\uC740 \uC774\uBC88 \uB2EC \uB9E4\uC218 \uB300\uC0C1\uC5D0\uC11C \uC81C\uC678\uD569\uB2C8\uB2E4.",
+  priceNotice:
+    "\uD604\uC7AC\uAC00\uB294 \uC2E4\uC2DC\uAC04 \uC2DC\uC138\uAC00 \uC544\uB2C8\uBBC0\uB85C, \uC8FC\uBB38 \uC9C1\uC804 \uC99D\uAD8C\uC0AC \uD654\uBA74\uC5D0\uC11C \uB2E4\uC2DC \uD655\uC778\uD558\uC138\uC694.",
   won: "\uC6D0",
+  shares: "\uC8FC",
 };
 
 const QUICK_AMOUNTS = [100000, 300000, 500000, 1000000, 2000000];
@@ -40,29 +49,58 @@ function formatWon(value) {
   return `${Math.round(number).toLocaleString("ko-KR")}${TEXT.won}`;
 }
 
-function parseWonInput(value) {
-  return Number(String(value).replace(/[^0-9]/g, ""));
+function formatShares(value) {
+  const number = Number(value);
+
+  if (!Number.isFinite(number)) {
+    return `0${TEXT.shares}`;
+  }
+
+  return `${Math.floor(number).toLocaleString("ko-KR")}${TEXT.shares}`;
 }
 
-function safeStorageGet() {
+function parseWonInput(value) {
+  return Number(String(value).replace(/[^0-9]/g, "")) || 0;
+}
+
+function getPriceKey(item) {
+  return String(item.etfCode || item.etfName || item.id || item.category || "unknown");
+}
+
+function safeStorageGet(key) {
   try {
     if (typeof window === "undefined") {
       return "";
     }
 
-    return window.localStorage.getItem(STORAGE_KEY) || "";
+    return window.localStorage.getItem(key) || "";
   } catch {
     return "";
   }
 }
 
-function safeStorageSet(value) {
+function safeStorageSet(key, value) {
   try {
     if (typeof window !== "undefined") {
-      window.localStorage.setItem(STORAGE_KEY, value);
+      window.localStorage.setItem(key, value);
     }
   } catch {
     // localStorage access can fail in restricted browser modes.
+  }
+}
+
+function safeJsonStorageGet(key) {
+  try {
+    const rawValue = safeStorageGet(key);
+
+    if (!rawValue) {
+      return {};
+    }
+
+    const parsed = JSON.parse(rawValue);
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
   }
 }
 
@@ -71,12 +109,20 @@ export default function MonthlyBuyAllocationCard({
   rebalanceEtfCandidates = [],
 }) {
   const [monthlyInvestAmountInput, setMonthlyInvestAmountInput] = useState(() => {
-    return safeStorageGet() || "500000";
+    return safeStorageGet(STORAGE_KEY) || "500000";
+  });
+
+  const [etfPrices, setEtfPrices] = useState(() => {
+    return safeJsonStorageGet(PRICE_STORAGE_KEY);
   });
 
   useEffect(() => {
-    safeStorageSet(monthlyInvestAmountInput);
+    safeStorageSet(STORAGE_KEY, monthlyInvestAmountInput);
   }, [monthlyInvestAmountInput]);
+
+  useEffect(() => {
+    safeStorageSet(PRICE_STORAGE_KEY, JSON.stringify(etfPrices));
+  }, [etfPrices]);
 
   const monthlyInvestAmount = parseWonInput(monthlyInvestAmountInput);
 
@@ -89,6 +135,37 @@ export default function MonthlyBuyAllocationCard({
     });
   }, [monthlyInvestAmount, rebalancePriorityList, rebalanceEtfCandidates]);
 
+  const allocationItems = useMemo(() => {
+    return allocationResult.items.map((item) => {
+      const priceKey = getPriceKey(item);
+      const priceInput = etfPrices[priceKey] || "";
+      const currentPrice = parseWonInput(priceInput);
+      const buyShares = currentPrice > 0 ? Math.floor(item.amount / currentPrice) : 0;
+      const usedAmount = buyShares * currentPrice;
+      const itemCashLeft = Math.max(0, item.amount - usedAmount);
+
+      return {
+        ...item,
+        priceKey,
+        priceInput,
+        currentPrice,
+        buyShares,
+        usedAmount,
+        itemCashLeft,
+      };
+    });
+  }, [allocationResult.items, etfPrices]);
+
+  const actualOrderAmount = allocationItems.reduce(
+    (sum, item) => sum + item.usedAmount,
+    0
+  );
+
+  const totalCashLeftAfterOrder = Math.max(
+    0,
+    allocationResult.totalBudget - actualOrderAmount
+  );
+
   const allocationRate =
     allocationResult.totalBudget > 0
       ? Math.round(
@@ -96,6 +173,22 @@ export default function MonthlyBuyAllocationCard({
             100
         )
       : 0;
+
+  const handlePriceChange = (item, value) => {
+    const priceKey = getPriceKey(item);
+
+    setEtfPrices((prevPrices) => {
+      const nextPrices = { ...prevPrices };
+
+      if (!value) {
+        delete nextPrices[priceKey];
+      } else {
+        nextPrices[priceKey] = value;
+      }
+
+      return nextPrices;
+    });
+  };
 
   return (
     <section style={styles.card}>
@@ -158,9 +251,16 @@ export default function MonthlyBuyAllocationCard({
         </div>
 
         <div style={styles.summaryItem}>
+          <span style={styles.summaryLabel}>{TEXT.actualOrderAmount}</span>
+          <strong style={styles.summaryValue}>
+            {formatWon(actualOrderAmount)}
+          </strong>
+        </div>
+
+        <div style={styles.summaryItem}>
           <span style={styles.summaryLabel}>{TEXT.remainingAmount}</span>
           <strong style={styles.summaryValue}>
-            {formatWon(allocationResult.remainingAmount)}
+            {formatWon(totalCashLeftAfterOrder)}
           </strong>
         </div>
 
@@ -170,7 +270,7 @@ export default function MonthlyBuyAllocationCard({
         </div>
       </div>
 
-      {allocationResult.items.length > 0 ? (
+      {allocationItems.length > 0 ? (
         <div style={styles.tableWrap}>
           <table style={styles.table}>
             <thead>
@@ -178,12 +278,16 @@ export default function MonthlyBuyAllocationCard({
                 <th style={styles.th}>{TEXT.priority}</th>
                 <th style={styles.th}>{TEXT.category}</th>
                 <th style={styles.th}>{TEXT.recommendedEtf}</th>
-                <th style={styles.th}>{TEXT.recommendedAmount}</th>
+                <th style={styles.th}>{TEXT.plannedAmount}</th>
+                <th style={styles.th}>{TEXT.currentPrice}</th>
+                <th style={styles.th}>{TEXT.buyShares}</th>
+                <th style={styles.th}>{TEXT.usedAmount}</th>
+                <th style={styles.th}>{TEXT.itemCashLeft}</th>
                 <th style={styles.th}>{TEXT.reason}</th>
               </tr>
             </thead>
             <tbody>
-              {allocationResult.items.map((item, index) => {
+              {allocationItems.map((item, index) => {
                 const alternativeCandidates = (item.candidates || [])
                   .slice(1, 3)
                   .map((candidate) => candidate.name || candidate.etfName)
@@ -207,6 +311,21 @@ export default function MonthlyBuyAllocationCard({
                       )}
                     </td>
                     <td style={styles.tdStrong}>{formatWon(item.amount)}</td>
+                    <td style={styles.td}>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={item.priceInput}
+                        onChange={(event) =>
+                          handlePriceChange(item, event.target.value)
+                        }
+                        placeholder="0"
+                        style={styles.priceInput}
+                      />
+                    </td>
+                    <td style={styles.tdStrong}>{formatShares(item.buyShares)}</td>
+                    <td style={styles.tdStrong}>{formatWon(item.usedAmount)}</td>
+                    <td style={styles.td}>{formatWon(item.itemCashLeft)}</td>
                     <td style={styles.td}>{item.reason}</td>
                   </tr>
                 );
@@ -223,11 +342,7 @@ export default function MonthlyBuyAllocationCard({
         <ul style={styles.checklist}>
           <li>{TEXT.noSell}</li>
           <li>{TEXT.notice}</li>
-          <li>
-            ETF \uC2E4\uC81C \uC8FC\uBB38 \uC804\uC5D0\uB294 \uD604\uC7AC\uAC00,
-            \uC608\uC218\uAE08, \uC218\uC218\uB8CC\uB97C \uD55C \uBC88 \uB354
-            \uD655\uC778\uD558\uC138\uC694.
-          </li>
+          <li>{TEXT.priceNotice}</li>
         </ul>
       </div>
     </section>
@@ -291,6 +406,16 @@ const styles = {
     borderRadius: "12px",
     border: "1px solid #d1d5db",
     fontSize: "16px",
+    fontWeight: 700,
+    color: "#111827",
+    outline: "none",
+  },
+  priceInput: {
+    width: "90px",
+    padding: "8px 10px",
+    borderRadius: "10px",
+    border: "1px solid #d1d5db",
+    fontSize: "13px",
     fontWeight: 700,
     color: "#111827",
     outline: "none",
