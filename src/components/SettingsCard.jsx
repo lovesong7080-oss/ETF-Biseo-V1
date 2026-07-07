@@ -3,6 +3,7 @@ import { useRef } from "react";
 export default function SettingsCard({ holdings, setHoldings }) {
   const fileInputRef = useRef(null);
   const fullRestoreFileInputRef = useRef(null);
+
   const holdingCount = holdings.length;
   const hasHoldings = holdingCount > 0;
 
@@ -40,7 +41,7 @@ export default function SettingsCard({ holdings, setHoldings }) {
     alert(`보유 ETF ${holdingCount}개 백업 파일을 저장했습니다.`);
   };
 
-    const handleBackupAllData = () => {
+  const handleBackupAllData = () => {
     const localStorageSnapshot = {};
     const parsedLocalStorageSnapshot = {};
 
@@ -92,7 +93,7 @@ export default function SettingsCard({ holdings, setHoldings }) {
     alert(`전체 데이터 백업 파일을 저장했습니다.\n보유 ETF: ${holdingCount}개`);
   };
 
-    const handleRestoreAllData = (event) => {
+  const handleRestoreAllData = (event) => {
     const file = event.target.files?.[0];
 
     if (!file) return;
@@ -187,6 +188,7 @@ export default function SettingsCard({ holdings, setHoldings }) {
 
     reader.readAsText(file);
   };
+
   const handleRestoreHoldings = (event) => {
     const file = event.target.files?.[0];
 
@@ -218,7 +220,7 @@ export default function SettingsCard({ holdings, setHoldings }) {
         }
 
         const ok = confirm(
-          `보유 ETF ${restoredHoldings.length}개를 복원할까요?\n현재 보유 ETF ${holdingCount}개는 덮어씌워집니다.`
+          `보유 ETF ${restoredHoldings.length}개를 복원할까요?\n현재 보유 ETF ${holdingCount}개는 덮어써집니다.`
         );
 
         if (!ok) return;
@@ -274,7 +276,9 @@ export default function SettingsCard({ holdings, setHoldings }) {
 
       <div className="settings-section">
         <h3>데이터 관리</h3>
-        <p>보유 ETF 목록을 JSON 파일로 백업하거나 복원합니다.</p>
+        <p>
+          보유 ETF 목록 또는 전체 앱 데이터를 JSON 파일로 백업하거나 복원합니다.
+        </p>
 
         <div className="settings-actions">
           <button
@@ -286,6 +290,10 @@ export default function SettingsCard({ holdings, setHoldings }) {
 
           <button onClick={handleBackupAllData}>
             전체 데이터 백업하기
+          </button>
+
+          <button onClick={() => fullRestoreFileInputRef.current?.click()}>
+            전체 데이터 복원하기
           </button>
 
           <button onClick={() => fileInputRef.current?.click()}>
@@ -300,12 +308,20 @@ export default function SettingsCard({ holdings, setHoldings }) {
           onChange={handleRestoreHoldings}
           style={{ display: "none" }}
         />
+
+        <input
+          ref={fullRestoreFileInputRef}
+          type="file"
+          accept=".json,application/json"
+          onChange={handleRestoreAllData}
+          style={{ display: "none" }}
+        />
       </div>
 
       <div className="settings-section danger-zone">
         <h3>위험 구역</h3>
         <p>
-          보유 ETF 목록만 초기화합니다. 은퇴 계산값이나 다른 입력값은 삭제하지 않습니다.
+          보유 ETF 목록만 초기화합니다. 계산 방식이나 다른 설정값은 삭제하지 않습니다.
         </p>
 
         <button
