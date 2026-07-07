@@ -1,26 +1,82 @@
-﻿import { useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { calculateMonthlyBuyAllocation } from "../utils/monthlyBuyAllocation";
+
+const STORAGE_KEY = "etfBiseoMonthlyInvestAmount";
+
+const TEXT = {
+  eyebrow: "MONTHLY BUY ALLOCATION",
+  title: "\uC774\uBC88 \uB2EC \uC790\uB3D9 \uB9E4\uC218 \uBC30\uBD84",
+  description:
+    "\uC774\uBC88 \uB2EC \uC0C8\uB85C \uB123\uC744 \uD22C\uC790\uAE08\uB9CC \uAE30\uC900\uC73C\uB85C \uBD80\uC871\uD55C \uC790\uC0B0\uAD70\uC758 ETF \uB9E4\uC218 \uAE08\uC561\uC744 \uACC4\uC0B0\uD569\uB2C8\uB2E4. \uB9E4\uB3C4\uB294 \uBC18\uC601\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.",
+  monthlyAmount: "\uC774\uBC88 \uB2EC \uD22C\uC790\uAE08",
+  quickAmount: "\uBE60\uB978 \uAE08\uC561",
+  totalBudget: "\uD22C\uC790\uAE08",
+  allocatedAmount: "\uBC30\uBD84 \uAE08\uC561",
+  remainingAmount: "\uB0A8\uC740 \uAE08\uC561",
+  allocationRate: "\uBC30\uBD84\uB960",
+  priority: "\uC6B0\uC120\uC21C\uC704",
+  category: "\uBD84\uB958",
+  recommendedEtf: "\uCD94\uCC9C ETF",
+  recommendedAmount: "\uCD94\uCC9C \uAE08\uC561",
+  reason: "\uC0AC\uC720",
+  alternativeCandidates: "\uB300\uCCB4 \uD6C4\uBCF4",
+  checklistTitle: "\uC2E4\uC804 \uC8FC\uBB38 \uCCB4\uD06C\uB9AC\uC2A4\uD2B8",
+  notice:
+    "\uACC4\uC0B0 \uAE30\uC900: \uBAA9\uD45C \uBE44\uC911 \uB300\uBE44 \uBD80\uC871 \uAE08\uC561\uC774 \uD070 \uD56D\uBAA9\uBD80\uD130 1,000\uC6D0 \uB2E8\uC704\uB85C \uBC30\uBD84\uD569\uB2C8\uB2E4.",
+  noSell:
+    "\uBE44\uC911 \uCD08\uACFC \uC790\uC0B0\uC740 \uC774\uBC88 \uB2EC \uB9E4\uC218 \uB300\uC0C1\uC5D0\uC11C \uC81C\uC678\uD569\uB2C8\uB2E4.",
+  won: "\uC6D0",
+};
+
+const QUICK_AMOUNTS = [100000, 300000, 500000, 1000000, 2000000];
 
 function formatWon(value) {
   const number = Number(value);
 
   if (!Number.isFinite(number)) {
-    return "0원";
+    return `0${TEXT.won}`;
   }
 
-  return `${Math.round(number).toLocaleString("ko-KR")}원`;
+  return `${Math.round(number).toLocaleString("ko-KR")}${TEXT.won}`;
 }
 
 function parseWonInput(value) {
   return Number(String(value).replace(/[^0-9]/g, ""));
 }
 
+function safeStorageGet() {
+  try {
+    if (typeof window === "undefined") {
+      return "";
+    }
+
+    return window.localStorage.getItem(STORAGE_KEY) || "";
+  } catch {
+    return "";
+  }
+}
+
+function safeStorageSet(value) {
+  try {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(STORAGE_KEY, value);
+    }
+  } catch {
+    // localStorage access can fail in restricted browser modes.
+  }
+}
+
 export default function MonthlyBuyAllocationCard({
   rebalancePriorityList = [],
   rebalanceEtfCandidates = [],
 }) {
-  const [monthlyInvestAmountInput, setMonthlyInvestAmountInput] =
-    useState("500000");
+  const [monthlyInvestAmountInput, setMonthlyInvestAmountInput] = useState(() => {
+    return safeStorageGet() || "500000";
+  });
+
+  useEffect(() => {
+    safeStorageSet(monthlyInvestAmountInput);
+  }, [monthlyInvestAmountInput]);
 
   const monthlyInvestAmount = parseWonInput(monthlyInvestAmountInput);
 
@@ -45,19 +101,17 @@ export default function MonthlyBuyAllocationCard({
     <section style={styles.card}>
       <div style={styles.header}>
         <div>
-          <p style={styles.eyebrow}>Monthly Buy Allocation</p>
-          <h2 style={styles.title}>이번 달 자동 매수 배분</h2>
-          <p style={styles.description}>
-            이번 달 새로 넣을 투자금만 기준으로 부족한 자산군의 ETF 매수
-            금액을 계산합니다. 매도는 반영하지 않습니다.
-          </p>
+          <p style={styles.eyebrow}>{TEXT.eyebrow}</p>
+          <h2 style={styles.title}>{TEXT.title}</h2>
+          <p style={styles.description}>{TEXT.description}</p>
         </div>
       </div>
 
       <div style={styles.inputBox}>
         <label style={styles.label} htmlFor="monthly-invest-amount">
-          이번 달 투자금
+          {TEXT.monthlyAmount}
         </label>
+
         <div style={styles.inputRow}>
           <input
             id="monthly-invest-amount"
@@ -67,37 +121,51 @@ export default function MonthlyBuyAllocationCard({
             onChange={(event) =>
               setMonthlyInvestAmountInput(event.target.value)
             }
-            placeholder="예: 500000"
+            placeholder="500000"
             style={styles.input}
           />
-          <span style={styles.wonText}>원</span>
+          <span style={styles.wonText}>{TEXT.won}</span>
+        </div>
+
+        <div style={styles.quickBox}>
+          <span style={styles.quickLabel}>{TEXT.quickAmount}</span>
+          {QUICK_AMOUNTS.map((amount) => (
+            <button
+              key={amount}
+              type="button"
+              style={styles.quickButton}
+              onClick={() => setMonthlyInvestAmountInput(String(amount))}
+            >
+              {formatWon(amount)}
+            </button>
+          ))}
         </div>
       </div>
 
       <div style={styles.summaryGrid}>
         <div style={styles.summaryItem}>
-          <span style={styles.summaryLabel}>투자금</span>
+          <span style={styles.summaryLabel}>{TEXT.totalBudget}</span>
           <strong style={styles.summaryValue}>
             {formatWon(allocationResult.totalBudget)}
           </strong>
         </div>
 
         <div style={styles.summaryItem}>
-          <span style={styles.summaryLabel}>배분 금액</span>
+          <span style={styles.summaryLabel}>{TEXT.allocatedAmount}</span>
           <strong style={styles.summaryValue}>
             {formatWon(allocationResult.allocatedAmount)}
           </strong>
         </div>
 
         <div style={styles.summaryItem}>
-          <span style={styles.summaryLabel}>남은 금액</span>
+          <span style={styles.summaryLabel}>{TEXT.remainingAmount}</span>
           <strong style={styles.summaryValue}>
             {formatWon(allocationResult.remainingAmount)}
           </strong>
         </div>
 
         <div style={styles.summaryItem}>
-          <span style={styles.summaryLabel}>배분률</span>
+          <span style={styles.summaryLabel}>{TEXT.allocationRate}</span>
           <strong style={styles.summaryValue}>{allocationRate}%</strong>
         </div>
       </div>
@@ -107,28 +175,42 @@ export default function MonthlyBuyAllocationCard({
           <table style={styles.table}>
             <thead>
               <tr>
-                <th style={styles.th}>우선순위</th>
-                <th style={styles.th}>분류</th>
-                <th style={styles.th}>추천 ETF</th>
-                <th style={styles.th}>추천 금액</th>
-                <th style={styles.th}>사유</th>
+                <th style={styles.th}>{TEXT.priority}</th>
+                <th style={styles.th}>{TEXT.category}</th>
+                <th style={styles.th}>{TEXT.recommendedEtf}</th>
+                <th style={styles.th}>{TEXT.recommendedAmount}</th>
+                <th style={styles.th}>{TEXT.reason}</th>
               </tr>
             </thead>
             <tbody>
-              {allocationResult.items.map((item, index) => (
-                <tr key={item.id || `${item.category}-${index}`}>
-                  <td style={styles.td}>{index + 1}</td>
-                  <td style={styles.td}>{item.category}</td>
-                  <td style={styles.td}>
-                    <strong>{item.etfName}</strong>
-                    {item.etfCode ? (
-                      <span style={styles.code}> {item.etfCode}</span>
-                    ) : null}
-                  </td>
-                  <td style={styles.tdStrong}>{formatWon(item.amount)}</td>
-                  <td style={styles.td}>{item.reason}</td>
-                </tr>
-              ))}
+              {allocationResult.items.map((item, index) => {
+                const alternativeCandidates = (item.candidates || [])
+                  .slice(1, 3)
+                  .map((candidate) => candidate.name || candidate.etfName)
+                  .filter(Boolean);
+
+                return (
+                  <tr key={item.id || `${item.category}-${index}`}>
+                    <td style={styles.td}>{index + 1}</td>
+                    <td style={styles.td}>{item.category}</td>
+                    <td style={styles.td}>
+                      <strong>{item.etfName}</strong>
+                      {item.etfCode ? (
+                        <span style={styles.code}> {item.etfCode}</span>
+                      ) : null}
+
+                      {alternativeCandidates.length > 0 && (
+                        <div style={styles.alternativeText}>
+                          {TEXT.alternativeCandidates}:{" "}
+                          {alternativeCandidates.join(" / ")}
+                        </div>
+                      )}
+                    </td>
+                    <td style={styles.tdStrong}>{formatWon(item.amount)}</td>
+                    <td style={styles.td}>{item.reason}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -136,10 +218,18 @@ export default function MonthlyBuyAllocationCard({
         <div style={styles.emptyBox}>{allocationResult.message}</div>
       )}
 
-      <p style={styles.notice}>
-        계산 기준: 목표 비중 대비 부족 금액이 큰 항목부터 1,000원 단위로
-        배분합니다.
-      </p>
+      <div style={styles.checklistBox}>
+        <h3 style={styles.checklistTitle}>{TEXT.checklistTitle}</h3>
+        <ul style={styles.checklist}>
+          <li>{TEXT.noSell}</li>
+          <li>{TEXT.notice}</li>
+          <li>
+            ETF \uC2E4\uC81C \uC8FC\uBB38 \uC804\uC5D0\uB294 \uD604\uC7AC\uAC00,
+            \uC608\uC218\uAE08, \uC218\uC218\uB8CC\uB97C \uD55C \uBC88 \uB354
+            \uD655\uC778\uD558\uC138\uC694.
+          </li>
+        </ul>
+      </div>
     </section>
   );
 }
@@ -210,6 +300,28 @@ const styles = {
     fontWeight: 700,
     color: "#374151",
   },
+  quickBox: {
+    display: "flex",
+    flexWrap: "wrap",
+    alignItems: "center",
+    gap: "8px",
+    marginTop: "12px",
+  },
+  quickLabel: {
+    fontSize: "12px",
+    fontWeight: 700,
+    color: "#6b7280",
+  },
+  quickButton: {
+    padding: "8px 10px",
+    borderRadius: "999px",
+    border: "1px solid #d1d5db",
+    background: "#f9fafb",
+    color: "#374151",
+    fontSize: "12px",
+    fontWeight: 700,
+    cursor: "pointer",
+  },
   summaryGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
@@ -270,6 +382,12 @@ const styles = {
     fontSize: "12px",
     fontWeight: 600,
   },
+  alternativeText: {
+    marginTop: "6px",
+    color: "#6b7280",
+    fontSize: "12px",
+    lineHeight: 1.5,
+  },
   emptyBox: {
     padding: "18px",
     borderRadius: "14px",
@@ -278,9 +396,23 @@ const styles = {
     color: "#6b7280",
     fontSize: "14px",
   },
-  notice: {
-    margin: "14px 0 0",
+  checklistBox: {
+    marginTop: "16px",
+    padding: "14px",
+    borderRadius: "14px",
+    background: "#f8fafc",
+    border: "1px solid #e2e8f0",
+  },
+  checklistTitle: {
+    margin: "0 0 8px",
+    fontSize: "14px",
+    color: "#111827",
+  },
+  checklist: {
+    margin: 0,
+    paddingLeft: "20px",
     fontSize: "12px",
-    color: "#6b7280",
+    lineHeight: 1.7,
+    color: "#4b5563",
   },
 };
