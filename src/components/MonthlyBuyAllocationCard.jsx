@@ -26,6 +26,11 @@ const TEXT = {
   itemCashLeft: "\uC794\uC561",
   reason: "\uC0AC\uC720",
   alternativeCandidates: "\uB300\uCCB4 \uD6C4\uBCF4",
+  orderMemoTitle: "\uC774\uBC88 \uB2EC \uB9E4\uC218 \uC8FC\uBB38 \uBA54\uBAA8",
+  copyOrderMemo: "\uC8FC\uBB38 \uBA54\uBAA8 \uBCF5\uC0AC",
+  copied: "\uBCF5\uC0AC\uC644\uB8CC",
+  orderMemoEmpty:
+    "\uD604\uC7AC\uAC00\uB97C \uC785\uB825\uD558\uBA74 \uC2E4\uC81C \uB9E4\uC218 \uC218\uB7C9\uACFC \uC8FC\uBB38 \uBA54\uBAA8\uAC00 \uC0DD\uC131\uB429\uB2C8\uB2E4.",
   checklistTitle: "\uC2E4\uC804 \uC8FC\uBB38 \uCCB4\uD06C\uB9AC\uC2A4\uD2B8",
   notice:
     "\uACC4\uC0B0 \uAE30\uC900: \uBAA9\uD45C \uBE44\uC911 \uB300\uBE44 \uBD80\uC871 \uAE08\uC561\uC774 \uD070 \uD56D\uBAA9\uBD80\uD130 1,000\uC6D0 \uB2E8\uC704\uB85C \uBC30\uBD84\uD569\uB2C8\uB2E4.",
@@ -33,6 +38,7 @@ const TEXT = {
     "\uBE44\uC911 \uCD08\uACFC \uC790\uC0B0\uC740 \uC774\uBC88 \uB2EC \uB9E4\uC218 \uB300\uC0C1\uC5D0\uC11C \uC81C\uC678\uD569\uB2C8\uB2E4.",
   priceNotice:
     "\uD604\uC7AC\uAC00\uB294 \uC2E4\uC2DC\uAC04 \uC2DC\uC138\uAC00 \uC544\uB2C8\uBBC0\uB85C, \uC8FC\uBB38 \uC9C1\uC804 \uC99D\uAD8C\uC0AC \uD654\uBA74\uC5D0\uC11C \uB2E4\uC2DC \uD655\uC778\uD558\uC138\uC694.",
+  priceNeeded: "\uD604\uC7AC\uAC00 \uC785\uB825 \uD544\uC694",
   won: "\uC6D0",
   shares: "\uC8FC",
 };
@@ -104,6 +110,36 @@ function safeJsonStorageGet(key) {
   }
 }
 
+async function copyTextToClipboard(text) {
+  if (!text) {
+    return false;
+  }
+
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.style.position = "fixed";
+    textarea.style.left = "-9999px";
+    textarea.style.top = "-9999px";
+
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+
+    const success = document.execCommand("copy");
+    document.body.removeChild(textarea);
+
+    return success;
+  } catch {
+    return false;
+  }
+}
+
 export default function MonthlyBuyAllocationCard({
   rebalancePriorityList = [],
   rebalanceEtfCandidates = [],
@@ -115,6 +151,8 @@ export default function MonthlyBuyAllocationCard({
   const [etfPrices, setEtfPrices] = useState(() => {
     return safeJsonStorageGet(PRICE_STORAGE_KEY);
   });
+
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     safeStorageSet(STORAGE_KEY, monthlyInvestAmountInput);
@@ -174,6 +212,50 @@ export default function MonthlyBuyAllocationCard({
         )
       : 0;
 
+  const orderMemoText = useMemo(() => {
+    if (allocationItems.length === 0) {
+      return TEXT.orderMemoEmpty;
+    }
+
+    const lines = [
+      TEXT.orderMemoTitle,
+      "",
+      `- ${TEXT.totalBudget}: ${formatWon(allocationResult.totalBudget)}`,
+      `- ${TEXT.allocatedAmount}: ${formatWon(allocationResult.allocatedAmount)}`,
+      `- ${TEXT.actualOrderAmount}: ${formatWon(actualOrderAmount)}`,
+      `- ${TEXT.remainingAmount}: ${formatWon(totalCashLeftAfterOrder)}`,
+      "",
+      "\uC885\uBAA9\uBCC4 \uC8FC\uBB38",
+    ];
+
+    allocationItems.forEach((item, index) => {
+      lines.push("");
+      lines.push(`${index + 1}. ${item.etfName}${item.etfCode ? ` (${item.etfCode})` : ""}`);
+      lines.push(`- ${TEXT.category}: ${item.category}`);
+      lines.push(`- ${TEXT.plannedAmount}: ${formatWon(item.amount)}`);
+      lines.push(
+        `- ${TEXT.currentPrice}: ${
+          item.currentPrice > 0 ? formatWon(item.currentPrice) : TEXT.priceNeeded
+        }`
+      );
+      lines.push(`- ${TEXT.buyShares}: ${formatShares(item.buyShares)}`);
+      lines.push(`- ${TEXT.usedAmount}: ${formatWon(item.usedAmount)}`);
+      lines.push(`- ${TEXT.itemCashLeft}: ${formatWon(item.itemCashLeft)}`);
+      lines.push(`- ${TEXT.reason}: ${item.reason}`);
+    });
+
+    lines.push("");
+    lines.push(`※ ${TEXT.priceNotice}`);
+
+    return lines.join("\n");
+  }, [
+    allocationItems,
+    allocationResult.totalBudget,
+    allocationResult.allocatedAmount,
+    actualOrderAmount,
+    totalCashLeftAfterOrder,
+  ]);
+
   const handlePriceChange = (item, value) => {
     const priceKey = getPriceKey(item);
 
@@ -188,6 +270,15 @@ export default function MonthlyBuyAllocationCard({
 
       return nextPrices;
     });
+  };
+
+  const handleCopyOrderMemo = async () => {
+    const success = await copyTextToClipboard(orderMemoText);
+
+    if (success) {
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1500);
+    }
   };
 
   return (
@@ -336,6 +427,25 @@ export default function MonthlyBuyAllocationCard({
       ) : (
         <div style={styles.emptyBox}>{allocationResult.message}</div>
       )}
+
+      <div style={styles.orderMemoBox}>
+        <div style={styles.orderMemoHeader}>
+          <h3 style={styles.orderMemoTitle}>{TEXT.orderMemoTitle}</h3>
+          <button
+            type="button"
+            style={copied ? styles.copyButtonDone : styles.copyButton}
+            onClick={handleCopyOrderMemo}
+          >
+            {copied ? TEXT.copied : TEXT.copyOrderMemo}
+          </button>
+        </div>
+
+        <textarea
+          readOnly
+          value={orderMemoText}
+          style={styles.orderMemoTextarea}
+        />
+      </div>
 
       <div style={styles.checklistBox}>
         <h3 style={styles.checklistTitle}>{TEXT.checklistTitle}</h3>
@@ -520,6 +630,59 @@ const styles = {
     border: "1px dashed #d1d5db",
     color: "#6b7280",
     fontSize: "14px",
+  },
+  orderMemoBox: {
+    marginTop: "16px",
+    padding: "16px",
+    borderRadius: "14px",
+    background: "#ffffff",
+    border: "1px solid #e5e7eb",
+  },
+  orderMemoHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: "12px",
+    marginBottom: "10px",
+  },
+  orderMemoTitle: {
+    margin: 0,
+    fontSize: "15px",
+    color: "#111827",
+  },
+  copyButton: {
+    padding: "8px 12px",
+    borderRadius: "10px",
+    border: "1px solid #2563eb",
+    background: "#2563eb",
+    color: "#ffffff",
+    fontSize: "12px",
+    fontWeight: 800,
+    cursor: "pointer",
+  },
+  copyButtonDone: {
+    padding: "8px 12px",
+    borderRadius: "10px",
+    border: "1px solid #16a34a",
+    background: "#16a34a",
+    color: "#ffffff",
+    fontSize: "12px",
+    fontWeight: 800,
+    cursor: "pointer",
+  },
+  orderMemoTextarea: {
+    width: "100%",
+    minHeight: "220px",
+    padding: "12px",
+    borderRadius: "12px",
+    border: "1px solid #d1d5db",
+    background: "#f9fafb",
+    color: "#111827",
+    fontSize: "12px",
+    lineHeight: 1.7,
+    resize: "vertical",
+    boxSizing: "border-box",
+    whiteSpace: "pre-wrap",
   },
   checklistBox: {
     marginTop: "16px",
