@@ -93,6 +93,59 @@ export default function SettingsCard({ holdings, setHoldings }) {
     alert(`전체 데이터 백업 파일을 저장했습니다.\n보유 ETF: ${holdingCount}개`);
   };
 
+    const downloadCurrentFullDataBackup = ({ type, filePrefix, reason }) => {
+    const localStorageSnapshot = {};
+    const parsedLocalStorageSnapshot = {};
+
+    for (let i = 0; i < localStorage.length; i += 1) {
+      const key = localStorage.key(i);
+
+      if (!key) continue;
+      if (!key.startsWith("etf-biseo-")) continue;
+
+      const value = localStorage.getItem(key);
+      localStorageSnapshot[key] = value;
+
+      try {
+        parsedLocalStorageSnapshot[key] = JSON.parse(value);
+      } catch {
+        parsedLocalStorageSnapshot[key] = value;
+      }
+    }
+
+    const backupData = {
+      app: "ETF-Biseo-V1",
+      type,
+      version: 1,
+      createdAt: new Date().toISOString(),
+      reason,
+      data: {
+        holdings,
+        holdingsCount: holdingCount,
+        localStorage: parsedLocalStorageSnapshot,
+        localStorageRaw: localStorageSnapshot,
+      },
+    };
+
+    const json = JSON.stringify(backupData, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = `${filePrefix}-${timestamp}.json`;
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    URL.revokeObjectURL(url);
+
+    return Object.keys(localStorageSnapshot).length;
+  };
+
   const handleRestoreAllData = (event) => {
     const file = event.target.files?.[0];
 
@@ -142,6 +195,12 @@ export default function SettingsCard({ holdings, setHoldings }) {
 
         if (!ok) return;
 
+        const beforeRestoreBackupCount = downloadCurrentFullDataBackup({
+          type: "before-restore-backup",
+          filePrefix: "etf-biseo-before-restore-backup",
+          reason: "before-full-data-restore",
+        });
+
         const currentKeys = [];
 
         for (let i = 0; i < localStorage.length; i += 1) {
@@ -172,7 +231,9 @@ export default function SettingsCard({ holdings, setHoldings }) {
           setHoldings(restoredHoldings);
         }
 
-        alert("전체 데이터 복원이 완료되었습니다. 화면을 새로고침합니다.");
+        alert(
+          `복원 전 안전 백업 ${beforeRestoreBackupCount}개 항목을 저장했습니다.\n전체 데이터 복원이 완료되었습니다. 화면을 새로고침합니다.`
+        );
         window.location.reload();
       } catch {
         alert("파일을 읽는 중 오류가 발생했습니다. 전체 데이터 백업 JSON 파일인지 확인하세요.");
