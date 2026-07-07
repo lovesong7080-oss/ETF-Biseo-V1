@@ -1,0 +1,23 @@
+﻿{
+  "name": "ETF-Biseo",
+  "short_name": "ETF-Biseo",
+  "description": "개인용 ETF 투자 보조앱",
+  "start_url": "/ETF-Biseo-V1/",
+  "scope": "/ETF-Biseo-V1/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/ETF-Biseo-V1/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/ETF-Biseo-V1/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
