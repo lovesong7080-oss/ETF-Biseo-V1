@@ -639,3 +639,34 @@ body {
   color: #7c2d12;
   font-size: 14px;
 }
+
+.candidate-etfs {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed #bfdbfe;
+}
+
+.candidate-etfs span {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #1d4ed8;
+}
+
+.candidate-etfs ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.candidate-etfs li {
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: #1e293b;
+}
+
+.candidate-etfs small {
+  display: block;
+  margin-top: 2px;
+  color: #64748b;
+}

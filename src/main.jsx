@@ -500,6 +500,7 @@ if (needAmount.채권 > 0 || investStyle === "safe") {
               won={won}
               summary={summary}
               pct={pct}
+              etfDb={ETF_DB}
             />                  
             
           </section>

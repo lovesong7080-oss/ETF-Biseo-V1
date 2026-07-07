@@ -49,6 +49,7 @@ export default function AssetAnalysisCard({
   won,
   summary,
   pct,
+  etfDb = [],
 }) {
   const targetItems = TARGET_ASSETS.map((asset) => {
     const current = currentWeight[asset] || 0;
@@ -77,7 +78,19 @@ export default function AssetAnalysisCard({
     .filter((item) => item.amount < 0)
     .sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount));
 
+  const getCandidateEtfs = (asset) =>
+    etfDb
+      .filter((etf) => {
+        if (asset === "채권") {
+          return etf.type === "채권";
+        }
+
+        return etf.region === asset && etf.type !== "채권";
+      })
+      .slice(0, 3);
+
   return (
+    
     <div className="card">
       <h2>📊 목표 비중 분석</h2>
 
@@ -112,6 +125,23 @@ export default function AssetAnalysisCard({
                   {won(item.amount)} 추가 매수 필요 · 부족{" "}
                   {Math.round(item.absGap)}%p
                 </p>
+
+                {getCandidateEtfs(item.asset).length > 0 && (
+                  <div className="candidate-etfs">
+                    <span>후보 ETF</span>
+                    <ul>
+                      {getCandidateEtfs(item.asset).map((etf) => (
+                        <li key={etf.name}>
+                          {etf.name}
+                          <small>
+                            {etf.region} · {etf.type}
+                            {etf.theme ? ` · ${etf.theme}` : ""}
+                          </small>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             </div>
           ))
