@@ -50,6 +50,33 @@ export default function AssetAnalysisCard({
   summary,
   pct,
 }) {
+  const targetItems = TARGET_ASSETS.map((asset) => {
+    const current = currentWeight[asset] || 0;
+    const targetWeight = target[asset] || 0;
+    const gap = rebalance[asset] || 0;
+    const amount = needAmount[asset] || 0;
+    const status = getGapStatus(gap, amount);
+
+    return {
+      asset,
+      current,
+      targetWeight,
+      gap,
+      amount,
+      absGap: Math.abs(gap),
+      absAmount: Math.abs(amount),
+      status,
+    };
+  });
+
+  const buyPriorityItems = targetItems
+    .filter((item) => item.amount > 0)
+    .sort((a, b) => b.amount - a.amount);
+
+  const overweightItems = targetItems
+    .filter((item) => item.amount < 0)
+    .sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount));
+
   return (
     <div className="card">
       <h2>📊 목표 비중 분석</h2>
@@ -71,63 +98,89 @@ export default function AssetAnalysisCard({
         ))}
       </div>
 
+      <div className="rebalance-priority-list">
+        <h3>매수 우선순위</h3>
+
+        {buyPriorityItems.length > 0 ? (
+          buyPriorityItems.map((item, index) => (
+            <div className="priority-card buy" key={item.asset}>
+              <div className="priority-rank">{index + 1}순위</div>
+
+              <div className="priority-content">
+                <strong>{item.asset}</strong>
+                <p>
+                  {won(item.amount)} 추가 매수 필요 · 부족{" "}
+                  {Math.round(item.absGap)}%p
+                </p>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="priority-card neutral">
+            <div className="priority-rank">OK</div>
+
+            <div className="priority-content">
+              <strong>추가 매수 우선순위 없음</strong>
+              <p>목표 비중 기준으로 뚜렷하게 부족한 자산군이 없습니다.</p>
+            </div>
+          </div>
+        )}
+
+        {overweightItems.length > 0 && (
+          <div className="overweight-note">
+            <strong>비중 초과 자산</strong>
+            <p>
+              {overweightItems
+                .map((item) => `${item.asset} ${won(item.absAmount)} 초과`)
+                .join(" · ")}
+            </p>
+          </div>
+        )}
+      </div>
+
       <div className="target-gap-list">
         <h3>부족/초과 분석</h3>
 
-        {TARGET_ASSETS.map((asset) => {
-          const current = currentWeight[asset] || 0;
-          const targetWeight = target[asset] || 0;
-          const gap = rebalance[asset] || 0;
-          const amount = needAmount[asset] || 0;
-          const status = getGapStatus(gap, amount);
-          const absGap = Math.abs(gap);
-          const absAmount = Math.abs(amount);
-
-          return (
-            <div
-              className={`target-gap-card ${status.className}`}
-              key={asset}
-            >
-              <div className="target-gap-header">
-                <strong>{asset}</strong>
-                <span>{status.label}</span>
-              </div>
-
-              <div className="target-gap-detail">
-                <p>
-                  현재 {Math.round(current)}% / 목표 {targetWeight}%
-                </p>
-                <p>
-                  {gap > 0 ? "부족" : gap < 0 ? "초과" : "차이"}{" "}
-                  {Math.round(absGap)}%p · 약 {won(absAmount)}
-                </p>
-              </div>
-
-              <p className="target-gap-message">{status.message}</p>
+        {targetItems.map((item) => (
+          <div
+            className={`target-gap-card ${item.status.className}`}
+            key={item.asset}
+          >
+            <div className="target-gap-header">
+              <strong>{item.asset}</strong>
+              <span>{item.status.label}</span>
             </div>
-          );
-        })}
+
+            <div className="target-gap-detail">
+              <p>
+                현재 {Math.round(item.current)}% / 목표 {item.targetWeight}%
+              </p>
+              <p>
+                {item.gap > 0 ? "부족" : item.gap < 0 ? "초과" : "차이"}{" "}
+                {Math.round(item.absGap)}%p · 약 {won(item.absAmount)}
+              </p>
+            </div>
+
+            <p className="target-gap-message">{item.status.message}</p>
+          </div>
+        ))}
       </div>
 
       <div className="target-action-summary">
         <h3>리밸런싱 제안</h3>
 
-        {TARGET_ASSETS.map((asset) => {
-          const amount = needAmount[asset] || 0;
-
-          return (
-            <div className="row" key={asset}>
-              <span>{asset}</span>
-              <b>
-                {amount > 0
-                  ? `${won(amount)} 추가 매수 필요`
-                  : amount < 0
-                    ? `${won(Math.abs(amount))} 비중 초과`
-                    : "목표 비중 적정"}
-              </b>
-            </div>
-          );
-        })}
+        {targetItems.map((item) => (
+          <div className="row" key={item.asset}>
+            <span>{item.asset}</span>
+            <b>
+              {item.amount > 0
+                ? `${won(item.amount)} 추가 매수 필요`
+                : item.amount < 0
+                  ? `${won(item.absAmount)} 비중 초과`
+                  : "목표 비중 적정"}
+            </b>
+          </div>
+        ))}
       </div>
 
       <div className="asset-weight-bars">
