@@ -39,6 +39,58 @@ export default function SettingsCard({ holdings, setHoldings }) {
     alert(`보유 ETF ${holdingCount}개 백업 파일을 저장했습니다.`);
   };
 
+    const handleBackupAllData = () => {
+    const localStorageSnapshot = {};
+    const parsedLocalStorageSnapshot = {};
+
+    for (let i = 0; i < localStorage.length; i += 1) {
+      const key = localStorage.key(i);
+
+      if (!key) continue;
+      if (!key.startsWith("etf-biseo-")) continue;
+
+      const value = localStorage.getItem(key);
+      localStorageSnapshot[key] = value;
+
+      try {
+        parsedLocalStorageSnapshot[key] = JSON.parse(value);
+      } catch {
+        parsedLocalStorageSnapshot[key] = value;
+      }
+    }
+
+    const backupData = {
+      app: "ETF-Biseo-V1",
+      type: "full-data-backup",
+      version: 1,
+      createdAt: new Date().toISOString(),
+      data: {
+        holdings,
+        holdingsCount: holdingCount,
+        localStorage: parsedLocalStorageSnapshot,
+        localStorageRaw: localStorageSnapshot,
+      },
+    };
+
+    const json = JSON.stringify(backupData, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const today = new Date().toISOString().slice(0, 10);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = `etf-biseo-full-data-backup-${today}.json`;
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    URL.revokeObjectURL(url);
+
+    alert(`전체 데이터 백업 파일을 저장했습니다.\n보유 ETF: ${holdingCount}개`);
+  };
+
   const handleRestoreHoldings = (event) => {
     const file = event.target.files?.[0];
 
@@ -134,6 +186,10 @@ export default function SettingsCard({ holdings, setHoldings }) {
             disabled={!hasHoldings}
           >
             보유 ETF 백업하기
+          </button>
+
+          <button onClick={handleBackupAllData}>
+            전체 데이터 백업하기
           </button>
 
           <button onClick={() => fileInputRef.current?.click()}>
