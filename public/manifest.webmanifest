@@ -1,21 +1,22 @@
 ﻿{
-  "name": "ETF-Biseo",
-  "short_name": "ETF-Biseo",
+  "id": "https://lovesong7080-oss.github.io/ETF-Biseo-V1/",
+  "name": "ETF비서",
+  "short_name": "ETF비서",
   "description": "개인용 ETF 투자 보조앱",
-  "start_url": "./",
-  "scope": "./",
+  "start_url": "https://lovesong7080-oss.github.io/ETF-Biseo-V1/?pwa=1",
+  "scope": "https://lovesong7080-oss.github.io/ETF-Biseo-V1/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#2563eb",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "https://lovesong7080-oss.github.io/ETF-Biseo-V1/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "icon-512.png",
+      "src": "https://lovesong7080-oss.github.io/ETF-Biseo-V1/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
