@@ -10,6 +10,7 @@ import BottomNav from "./components/BottomNav";
 import FireCard from './components/FireCard';
 import HoldingsListCard from "./components/HoldingsListCard";
 import InvestStyleCard from "./components/InvestStyleCard";
+import MarketCommandCenterCard from "./components/MarketCommandCenterCard";
 import RecommendedEtfCard from "./components/RecommendedEtfCard";
 import RegionWeightChartCard from "./components/RegionWeightChartCard";
 import RetirementCard from "./components/RetirementCard";
@@ -363,6 +364,8 @@ if (needAmount.채권 > 0 || investStyle === "safe") {
                     
             
 
+
+            <MarketCommandCenterCard />
 
             <RecommendedEtfCard
               recommendedEtfGroups={recommendedEtfGroups}
