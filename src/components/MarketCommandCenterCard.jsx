@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 
 const STORAGE_KEY = "etf-biseo-market-command-center";
 
@@ -30,7 +30,12 @@ const DECISION_META = {
 };
 
 function todayKey() {
-  return new Date().toISOString().slice(0, 10);
+  const date = new Date();
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
 }
 
 function readData() {
@@ -66,85 +71,128 @@ function defaultRecord() {
   };
 }
 
-function getAutoDecision(record) {
-  const briefingComplete = record.usBriefing && record.todayStrategy;
-  const koreaCloseComplete = record.koreaClose && record.tomorrowStrategy;
+function clampScore(value) {
+  return Math.max(0, Math.min(100, value));
+}
+
+function getScoreEngine(record) {
+  let score = 50;
+  const plus = [];
+  const minus = [];
+  const neutral = [];
+
+  if (record.riskLevel === "낮음") {
+    score += 20;
+    plus.push("포트폴리오 위험도가 낮아 +20점");
+  }
+
+  if (record.riskLevel === "보통") {
+    neutral.push("포트폴리오 위험도는 보통입니다.");
+  }
+
+  if (record.riskLevel === "높음") {
+    score -= 30;
+    minus.push("포트폴리오 위험도가 높아 -30점");
+  }
+
+  if (record.foreignerAlert) {
+    score -= 25;
+    minus.push("외국인 수급 경보 체크로 -25점");
+  }
+
+  if (record.aiBubble) {
+    score -= 20;
+    minus.push("AI / 반도체 과열 체크로 -20점");
+  }
+
+  if (record.portfolioRisk) {
+    score += 10;
+    plus.push("포트폴리오 위험 점검 완료로 +10점");
+  }
+
+  if (record.usBriefing) {
+    score += 10;
+    plus.push("미국장 브리핑 확인으로 +10점");
+  }
+
+  if (record.todayStrategy) {
+    score += 10;
+    plus.push("오늘 전략 기록으로 +10점");
+  }
+
+  if (record.koreaClose) {
+    score += 5;
+    plus.push("한국장 마감 확인으로 +5점");
+  }
+
+  if (record.tomorrowStrategy) {
+    score += 5;
+    plus.push("내일 전략 기록으로 +5점");
+  }
 
   if (
     record.foreignerAlert &&
     record.aiBubble &&
     record.riskLevel === "높음"
   ) {
-    return {
-      decision: "주의",
-      level: "강한 주의",
-      reason:
-        "외국인 수급 경보, AI 과열, 위험도 높음이 동시에 켜졌습니다. 신규매수보다 리스크 관리가 우선입니다.",
-    };
+    score -= 10;
+    minus.push("수급 경보 + AI 과열 + 위험도 높음 동시 발생으로 추가 -10점");
   }
 
-  if (
-    record.riskLevel === "높음" &&
-    (record.foreignerAlert || record.aiBubble || record.portfolioRisk)
-  ) {
-    return {
-      decision: "주의",
-      level: "주의",
-      reason:
-        "위험도가 높은 상태에서 경보 항목이 켜져 있습니다. 신규매수는 줄이고 비중 점검이 필요합니다.",
-    };
-  }
+  const finalScore = clampScore(score);
 
-  if (
-    record.riskLevel === "보통" &&
-    briefingComplete &&
-    record.portfolioRisk
-  ) {
+  if (finalScore >= 70) {
     return {
-      decision: "대기",
-      level: "중립 대기",
-      reason:
-        "브리핑과 포트폴리오 위험 점검은 완료됐지만, 위험도가 보통입니다. 무리한 매수보다 관망이 적절합니다.",
-    };
-  }
-
-  if (
-    record.riskLevel === "낮음" &&
-    record.todayStrategy &&
-    !record.foreignerAlert &&
-    !record.aiBubble
-  ) {
-    return {
+      score: finalScore,
       decision: "매수",
       level: "매수 가능",
-      reason:
-        "위험도가 낮고 오늘 전략 확인이 완료됐습니다. 과열·수급 경보가 없다면 분할매수 검토가 가능합니다.",
+      allocation: "월 투자금 80~100% 사용 가능",
+      action:
+        "목표 비중이 부족한 ETF 위주로 분할매수를 검토하세요. 한 번에 몰빵하지 말고 계획된 금액 안에서 집행하세요.",
+      plus,
+      minus,
+      neutral,
     };
   }
 
-  if (record.riskLevel === "낮음" && briefingComplete) {
+  if (finalScore >= 50) {
     return {
-      decision: "매수",
-      level: "소액 매수 가능",
-      reason:
-        "브리핑 확인과 오늘 전략 기록이 완료됐고 위험도가 낮습니다. 단, 목표 비중 부족 ETF 위주로 접근하세요.",
-    };
-  }
-
-  if (koreaCloseComplete && record.riskLevel !== "높음") {
-    return {
+      score: finalScore,
       decision: "대기",
-      level: "마감 후 대기",
-      reason:
-        "한국장 마감과 내일 전략 확인이 완료됐습니다. 다음 거래일 전략을 기다리는 구간입니다.",
+      level: "소액 매수 가능",
+      allocation: "월 투자금 30~50%만 사용",
+      action:
+        "완전 매수 구간은 아닙니다. 꼭 산다면 목표 비중 부족 ETF에 한해 소액 분할매수만 적절합니다.",
+      plus,
+      minus,
+      neutral,
+    };
+  }
+
+  if (finalScore >= 30) {
+    return {
+      score: finalScore,
+      decision: "대기",
+      level: "대기 우선",
+      allocation: "월 투자금 0~30%만 사용",
+      action:
+        "신규매수보다 관망이 우선입니다. 현금 비중을 유지하고 다음 매수 후보만 정리하세요.",
+      plus,
+      minus,
+      neutral,
     };
   }
 
   return {
-    decision: "대기",
-    level: "기본 대기",
-    reason:
-      "강한 매수 또는 강한 주의 신호가 아직 부족합니다. 브리핑과 위험 체크를 먼저 완료하세요.",
+    score: finalScore,
+    decision: "주의",
+    level: "주의",
+    allocation: "신규매수 중단",
+    action:
+      "지금은 방어가 우선입니다. 신규매수는 멈추고, 과열 종목·편중 ETF·현금 비중을 먼저 점검하세요.",
+    plus,
+    minus,
+    neutral,
   };
 }
 
@@ -158,10 +206,10 @@ export default function MarketCommandCenterCard() {
     ...(records[date] || {}),
   };
 
+  const scoreEngine = useMemo(() => getScoreEngine(record), [record]);
   const decision = DECISION_META[record.decision] || DECISION_META.대기;
-  const autoDecision = getAutoDecision(record);
-  const autoMeta = DECISION_META[autoDecision.decision] || DECISION_META.대기;
-  const isSameDecision = record.decision === autoDecision.decision;
+  const autoMeta = DECISION_META[scoreEngine.decision] || DECISION_META.대기;
+  const isSameDecision = record.decision === scoreEngine.decision;
 
   useEffect(() => {
     writeData(records);
@@ -187,7 +235,7 @@ export default function MarketCommandCenterCard() {
   };
 
   const applyAutoDecision = () => {
-    update({ decision: autoDecision.decision });
+    update({ decision: scoreEngine.decision });
   };
 
   const resetToday = () => {
@@ -232,7 +280,7 @@ export default function MarketCommandCenterCard() {
         <div>
           <h2 style={styles.title}>🧭 투자 관제센터</h2>
           <p style={styles.desc}>
-            ChatGPT 브리핑을 받고 오늘의 투자 판단을 기록합니다.
+            브리핑 체크, 위험도 입력, 투자 점수 계산으로 오늘의 매수 판단을 관리합니다.
           </p>
         </div>
 
@@ -240,6 +288,70 @@ export default function MarketCommandCenterCard() {
           <div>오늘</div>
           <strong>{date}</strong>
           <div>{checkedCount}/7</div>
+        </div>
+      </div>
+
+      <div
+        style={{
+          ...styles.scorePanel,
+          background: autoMeta.bg,
+          borderColor: autoMeta.border,
+        }}
+      >
+        <div style={styles.scoreTop}>
+          <div>
+            <div style={styles.scoreLabel}>오늘 투자 점수</div>
+            <div style={{ ...styles.scoreValue, color: autoMeta.color }}>
+              {scoreEngine.score}점
+            </div>
+          </div>
+
+          <div style={styles.scoreRight}>
+            <div style={{ ...styles.scoreDecision, color: autoMeta.color }}>
+              {autoMeta.emoji} {scoreEngine.level}
+            </div>
+            <div style={styles.allocation}>{scoreEngine.allocation}</div>
+          </div>
+        </div>
+
+        <div style={styles.scoreBarOuter}>
+          <div
+            style={{
+              ...styles.scoreBarInner,
+              width: `${scoreEngine.score}%`,
+              background: autoMeta.color,
+            }}
+          />
+        </div>
+
+        <p style={styles.scoreAction}>{scoreEngine.action}</p>
+
+        <div style={styles.reasonGrid}>
+          <div style={styles.reasonBox}>
+            <div style={styles.reasonTitle}>가점</div>
+            {scoreEngine.plus.length > 0 ? (
+              scoreEngine.plus.map((item) => (
+                <div key={item} style={styles.reasonItem}>
+                  + {item}
+                </div>
+              ))
+            ) : (
+              <div style={styles.emptyReason}>가점 항목 없음</div>
+            )}
+          </div>
+
+          <div style={styles.reasonBox}>
+            <div style={styles.reasonTitle}>감점</div>
+            {scoreEngine.minus.length > 0 ? (
+              scoreEngine.minus.map((item) => (
+                <div key={item} style={styles.reasonItem}>
+                  - {item}
+                </div>
+              ))
+            ) : (
+              <div style={styles.emptyReason}>감점 항목 없음</div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -297,40 +409,21 @@ export default function MarketCommandCenterCard() {
             );
           })}
         </div>
-      </div>
 
-      <div
-        style={{
-          ...styles.autoPanel,
-          background: autoMeta.bg,
-          borderColor: autoMeta.border,
-        }}
-      >
-        <div style={styles.autoTop}>
-          <div>
-            <div style={styles.autoLabel}>자동 추천</div>
-            <div style={{ ...styles.autoValue, color: autoMeta.color }}>
-              {autoMeta.emoji} {autoDecision.level}
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={applyAutoDecision}
-            disabled={isSameDecision}
-            style={{
-              ...styles.applyButton,
-              color: autoMeta.color,
-              borderColor: autoMeta.border,
-              opacity: isSameDecision ? 0.55 : 1,
-              cursor: isSameDecision ? "default" : "pointer",
-            }}
-          >
-            {isSameDecision ? "적용됨" : "추천 적용"}
-          </button>
-        </div>
-
-        <p style={styles.autoReason}>{autoDecision.reason}</p>
+        <button
+          type="button"
+          onClick={applyAutoDecision}
+          disabled={isSameDecision}
+          style={{
+            ...styles.applyButton,
+            color: autoMeta.color,
+            borderColor: autoMeta.border,
+            opacity: isSameDecision ? 0.55 : 1,
+            cursor: isSameDecision ? "default" : "pointer",
+          }}
+        >
+          {isSameDecision ? "자동 추천 적용됨" : "자동 추천을 최종 판단에 적용"}
+        </button>
       </div>
 
       <div style={styles.grid}>
@@ -498,6 +591,92 @@ const styles = {
     fontWeight: 800,
     lineHeight: 1.4,
   },
+  scorePanel: {
+    marginBottom: "14px",
+    padding: "14px",
+    borderRadius: "16px",
+    border: "1px solid",
+  },
+  scoreTop: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: "12px",
+  },
+  scoreLabel: {
+    fontSize: "12px",
+    fontWeight: 900,
+    color: "#4b5563",
+    marginBottom: "3px",
+  },
+  scoreValue: {
+    fontSize: "34px",
+    fontWeight: 1000,
+    lineHeight: 1,
+  },
+  scoreRight: {
+    textAlign: "right",
+  },
+  scoreDecision: {
+    fontSize: "17px",
+    fontWeight: 1000,
+  },
+  allocation: {
+    marginTop: "4px",
+    fontSize: "12px",
+    fontWeight: 900,
+    color: "#374151",
+  },
+  scoreBarOuter: {
+    width: "100%",
+    height: "10px",
+    marginTop: "12px",
+    borderRadius: "999px",
+    background: "rgba(255, 255, 255, 0.7)",
+    overflow: "hidden",
+    border: "1px solid rgba(148, 163, 184, 0.35)",
+  },
+  scoreBarInner: {
+    height: "100%",
+    borderRadius: "999px",
+    transition: "width 0.2s ease",
+  },
+  scoreAction: {
+    margin: "12px 0",
+    fontSize: "13px",
+    fontWeight: 800,
+    color: "#374151",
+    lineHeight: 1.5,
+  },
+  reasonGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+    gap: "10px",
+  },
+  reasonBox: {
+    padding: "10px",
+    borderRadius: "12px",
+    background: "rgba(255, 255, 255, 0.72)",
+    border: "1px solid rgba(148, 163, 184, 0.28)",
+  },
+  reasonTitle: {
+    marginBottom: "6px",
+    fontSize: "12px",
+    fontWeight: 1000,
+    color: "#111827",
+  },
+  reasonItem: {
+    marginTop: "4px",
+    fontSize: "12px",
+    fontWeight: 750,
+    color: "#374151",
+    lineHeight: 1.45,
+  },
+  emptyReason: {
+    fontSize: "12px",
+    fontWeight: 700,
+    color: "#6b7280",
+  },
   decisionPanel: {
     marginBottom: "14px",
     padding: "14px",
@@ -551,43 +730,15 @@ const styles = {
     fontWeight: 900,
     cursor: "pointer",
   },
-  autoPanel: {
-    marginBottom: "14px",
-    padding: "14px",
-    borderRadius: "16px",
-    border: "1px solid",
-  },
-  autoTop: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: "12px",
-  },
-  autoLabel: {
-    fontSize: "12px",
-    fontWeight: 900,
-    color: "#4b5563",
-    marginBottom: "4px",
-  },
-  autoValue: {
-    fontSize: "18px",
-    fontWeight: 1000,
-  },
-  autoReason: {
-    margin: "10px 0 0",
-    fontSize: "13px",
-    fontWeight: 700,
-    color: "#374151",
-    lineHeight: 1.5,
-  },
   applyButton: {
-    padding: "8px 12px",
-    borderRadius: "999px",
+    width: "100%",
+    marginTop: "10px",
+    padding: "10px 12px",
+    borderRadius: "12px",
     border: "1px solid",
     background: "#ffffff",
-    fontSize: "12px",
-    fontWeight: 900,
-    whiteSpace: "nowrap",
+    fontSize: "13px",
+    fontWeight: 1000,
   },
   grid: {
     display: "grid",
