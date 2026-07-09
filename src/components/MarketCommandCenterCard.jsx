@@ -66,6 +66,88 @@ function defaultRecord() {
   };
 }
 
+function getAutoDecision(record) {
+  const briefingComplete = record.usBriefing && record.todayStrategy;
+  const koreaCloseComplete = record.koreaClose && record.tomorrowStrategy;
+
+  if (
+    record.foreignerAlert &&
+    record.aiBubble &&
+    record.riskLevel === "높음"
+  ) {
+    return {
+      decision: "주의",
+      level: "강한 주의",
+      reason:
+        "외국인 수급 경보, AI 과열, 위험도 높음이 동시에 켜졌습니다. 신규매수보다 리스크 관리가 우선입니다.",
+    };
+  }
+
+  if (
+    record.riskLevel === "높음" &&
+    (record.foreignerAlert || record.aiBubble || record.portfolioRisk)
+  ) {
+    return {
+      decision: "주의",
+      level: "주의",
+      reason:
+        "위험도가 높은 상태에서 경보 항목이 켜져 있습니다. 신규매수는 줄이고 비중 점검이 필요합니다.",
+    };
+  }
+
+  if (
+    record.riskLevel === "보통" &&
+    briefingComplete &&
+    record.portfolioRisk
+  ) {
+    return {
+      decision: "대기",
+      level: "중립 대기",
+      reason:
+        "브리핑과 포트폴리오 위험 점검은 완료됐지만, 위험도가 보통입니다. 무리한 매수보다 관망이 적절합니다.",
+    };
+  }
+
+  if (
+    record.riskLevel === "낮음" &&
+    record.todayStrategy &&
+    !record.foreignerAlert &&
+    !record.aiBubble
+  ) {
+    return {
+      decision: "매수",
+      level: "매수 가능",
+      reason:
+        "위험도가 낮고 오늘 전략 확인이 완료됐습니다. 과열·수급 경보가 없다면 분할매수 검토가 가능합니다.",
+    };
+  }
+
+  if (record.riskLevel === "낮음" && briefingComplete) {
+    return {
+      decision: "매수",
+      level: "소액 매수 가능",
+      reason:
+        "브리핑 확인과 오늘 전략 기록이 완료됐고 위험도가 낮습니다. 단, 목표 비중 부족 ETF 위주로 접근하세요.",
+    };
+  }
+
+  if (koreaCloseComplete && record.riskLevel !== "높음") {
+    return {
+      decision: "대기",
+      level: "마감 후 대기",
+      reason:
+        "한국장 마감과 내일 전략 확인이 완료됐습니다. 다음 거래일 전략을 기다리는 구간입니다.",
+    };
+  }
+
+  return {
+    decision: "대기",
+    level: "기본 대기",
+    reason:
+      "강한 매수 또는 강한 주의 신호가 아직 부족합니다. 브리핑과 위험 체크를 먼저 완료하세요.",
+  };
+}
+
 export default function MarketCommandCenterCard() {
   const date = todayKey();
   const [records, setRecords] = useState(() => readData());
@@ -77,6 +159,9 @@ export default function MarketCommandCenterCard() {
   };
 
   const decision = DECISION_META[record.decision] || DECISION_META.대기;
+  const autoDecision = getAutoDecision(record);
+  const autoMeta = DECISION_META[autoDecision.decision] || DECISION_META.대기;
+  const isSameDecision = record.decision === autoDecision.decision;
 
   useEffect(() => {
     writeData(records);
@@ -99,6 +184,10 @@ export default function MarketCommandCenterCard() {
 
   const toggle = (key) => {
     update({ [key]: !record[key] });
+  };
+
+  const applyAutoDecision = () => {
+    update({ decision: autoDecision.decision });
   };
 
   const resetToday = () => {
@@ -208,6 +297,40 @@ export default function MarketCommandCenterCard() {
             );
           })}
         </div>
+      </div>
+
+      <div
+        style={{
+          ...styles.autoPanel,
+          background: autoMeta.bg,
+          borderColor: autoMeta.border,
+        }}
+      >
+        <div style={styles.autoTop}>
+          <div>
+            <div style={styles.autoLabel}>자동 추천</div>
+            <div style={{ ...styles.autoValue, color: autoMeta.color }}>
+              {autoMeta.emoji} {autoDecision.level}
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={applyAutoDecision}
+            disabled={isSameDecision}
+            style={{
+              ...styles.applyButton,
+              color: autoMeta.color,
+              borderColor: autoMeta.border,
+              opacity: isSameDecision ? 0.55 : 1,
+              cursor: isSameDecision ? "default" : "pointer",
+            }}
+          >
+            {isSameDecision ? "적용됨" : "추천 적용"}
+          </button>
+        </div>
+
+        <p style={styles.autoReason}>{autoDecision.reason}</p>
       </div>
 
       <div style={styles.grid}>
@@ -427,6 +550,44 @@ const styles = {
     fontSize: "13px",
     fontWeight: 900,
     cursor: "pointer",
+  },
+  autoPanel: {
+    marginBottom: "14px",
+    padding: "14px",
+    borderRadius: "16px",
+    border: "1px solid",
+  },
+  autoTop: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: "12px",
+  },
+  autoLabel: {
+    fontSize: "12px",
+    fontWeight: 900,
+    color: "#4b5563",
+    marginBottom: "4px",
+  },
+  autoValue: {
+    fontSize: "18px",
+    fontWeight: 1000,
+  },
+  autoReason: {
+    margin: "10px 0 0",
+    fontSize: "13px",
+    fontWeight: 700,
+    color: "#374151",
+    lineHeight: 1.5,
+  },
+  applyButton: {
+    padding: "8px 12px",
+    borderRadius: "999px",
+    border: "1px solid",
+    background: "#ffffff",
+    fontSize: "12px",
+    fontWeight: 900,
+    whiteSpace: "nowrap",
   },
   grid: {
     display: "grid",
