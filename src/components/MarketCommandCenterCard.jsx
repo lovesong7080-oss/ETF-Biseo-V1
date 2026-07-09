@@ -2,6 +2,33 @@
 
 const STORAGE_KEY = "etf-biseo-market-command-center";
 
+const DECISION_META = {
+  매수: {
+    emoji: "🟢",
+    title: "매수",
+    desc: "분할매수 가능 구간입니다. 단, 목표 비중이 부족한 ETF 위주로만 접근하세요.",
+    color: "#166534",
+    bg: "#dcfce7",
+    border: "#86efac",
+  },
+  대기: {
+    emoji: "🟡",
+    title: "대기",
+    desc: "무리하지 않고 관망하는 구간입니다. 현금과 다음 매수 후보를 점검하세요.",
+    color: "#92400e",
+    bg: "#fef3c7",
+    border: "#facc15",
+  },
+  주의: {
+    emoji: "🔴",
+    title: "주의",
+    desc: "신규매수 자제 구간입니다. 과열, 외국인 수급, 포트폴리오 편중을 먼저 확인하세요.",
+    color: "#991b1b",
+    bg: "#fee2e2",
+    border: "#fca5a5",
+  },
+};
+
 function todayKey() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -33,6 +60,7 @@ function defaultRecord() {
     aiBubble: false,
     portfolioRisk: false,
     riskLevel: "보통",
+    decision: "대기",
     morningMemo: "",
     closingMemo: "",
   };
@@ -48,9 +76,12 @@ export default function MarketCommandCenterCard() {
     ...(records[date] || {}),
   };
 
+  const decision = DECISION_META[record.decision] || DECISION_META.대기;
+
   useEffect(() => {
     writeData(records);
     setSaved(true);
+
     const timer = window.setTimeout(() => setSaved(false), 1000);
     return () => window.clearTimeout(timer);
   }, [records]);
@@ -110,7 +141,7 @@ export default function MarketCommandCenterCard() {
     <section style={styles.card}>
       <div style={styles.header}>
         <div>
-          <h2 style={styles.title}>📡 투자 관제센터</h2>
+          <h2 style={styles.title}>🧭 투자 관제센터</h2>
           <p style={styles.desc}>
             ChatGPT 브리핑을 받고 오늘의 투자 판단을 기록합니다.
           </p>
@@ -119,7 +150,63 @@ export default function MarketCommandCenterCard() {
         <div style={styles.dateBox}>
           <div>오늘</div>
           <strong>{date}</strong>
-          <small>{checkedCount}/7</small>
+          <div>{checkedCount}/7</div>
+        </div>
+      </div>
+
+      <div
+        style={{
+          ...styles.decisionPanel,
+          background: decision.bg,
+          borderColor: decision.border,
+        }}
+      >
+        <div style={styles.decisionTop}>
+          <div>
+            <div style={styles.decisionLabel}>오늘 최종 판단</div>
+            <div style={{ ...styles.decisionValue, color: decision.color }}>
+              {decision.emoji} {decision.title}
+            </div>
+          </div>
+
+          <div
+            style={{
+              ...styles.decisionBadge,
+              color: decision.color,
+              borderColor: decision.border,
+            }}
+          >
+            {record.riskLevel} 위험
+          </div>
+        </div>
+
+        <p style={styles.decisionDesc}>{decision.desc}</p>
+
+        <div style={styles.decisionButtons}>
+          {Object.entries(DECISION_META).map(([key, meta]) => {
+            const active = record.decision === key;
+
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => update({ decision: key })}
+                style={{
+                  ...styles.decisionButton,
+                  ...(active
+                    ? {
+                        color: meta.color,
+                        background: "#ffffff",
+                        borderColor: meta.border,
+                        boxShadow: "0 6px 16px rgba(15, 23, 42, 0.12)",
+                      }
+                    : {}),
+                }}
+              >
+                {meta.emoji} {meta.title}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -226,7 +313,11 @@ export default function MarketCommandCenterCard() {
           <select
             value={record.riskLevel}
             onChange={(event) => update({ riskLevel: event.target.value })}
-            style={{ ...styles.select, color: riskColor, background: riskBg }}
+            style={{
+              ...styles.select,
+              color: riskColor,
+              background: riskBg,
+            }}
           >
             <option value="낮음">낮음</option>
             <option value="보통">보통</option>
@@ -237,6 +328,7 @@ export default function MarketCommandCenterCard() {
 
       <div style={styles.footer}>
         <span style={styles.saved}>{saved ? "저장됨" : ""}</span>
+
         <button type="button" style={styles.button} onClick={resetToday}>
           오늘 기록 초기화
         </button>
@@ -282,7 +374,59 @@ const styles = {
     fontSize: "12px",
     fontWeight: 800,
     lineHeight: 1.4,
-    lineHeight: 1.4,
+  },
+  decisionPanel: {
+    marginBottom: "14px",
+    padding: "14px",
+    borderRadius: "16px",
+    border: "1px solid",
+  },
+  decisionTop: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: "12px",
+  },
+  decisionLabel: {
+    fontSize: "12px",
+    fontWeight: 800,
+    color: "#4b5563",
+    marginBottom: "4px",
+  },
+  decisionValue: {
+    fontSize: "22px",
+    fontWeight: 1000,
+  },
+  decisionBadge: {
+    padding: "7px 10px",
+    borderRadius: "999px",
+    border: "1px solid",
+    background: "#ffffff",
+    fontSize: "12px",
+    fontWeight: 900,
+    whiteSpace: "nowrap",
+  },
+  decisionDesc: {
+    margin: "10px 0 12px",
+    fontSize: "13px",
+    fontWeight: 700,
+    color: "#374151",
+    lineHeight: 1.5,
+  },
+  decisionButtons: {
+    display: "grid",
+    gridTemplateColumns: "repeat(3, 1fr)",
+    gap: "8px",
+  },
+  decisionButton: {
+    padding: "10px",
+    borderRadius: "12px",
+    border: "1px solid #d1d5db",
+    background: "#f9fafb",
+    color: "#374151",
+    fontSize: "13px",
+    fontWeight: 900,
+    cursor: "pointer",
   },
   grid: {
     display: "grid",
@@ -301,12 +445,6 @@ const styles = {
     fontSize: "14px",
     fontWeight: 900,
     color: "#111827",
-  },
-  checkbox: {
-    width: "18px",
-    height: "18px",
-    minWidth: "18px",
-    accentColor: "#16a34a",
   },
   checkbox: {
     width: "18px",
